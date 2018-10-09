@@ -4,3 +4,7 @@
         max-height: 70%;
     }
 }
+.nav .open>a, .nav .open>a:focus, .nav .open>a:hover, .nav .messages-menu {
+    background-color: #081c24;
+    cursor: pointer;    
+}

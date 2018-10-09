@@ -1,3 +1,4 @@
+import { CommonService } from './common.service';
 import { SessionService } from './session.service';
 import { NgModule } from '@angular/core';
 import { SessionStorageService } from 'src/app/common/services/session.storage.service';
@@ -7,7 +8,8 @@ import { SessionStorageService } from 'src/app/common/services/session.storage.s
   declarations: [],
   providers:[
     SessionService,
-    SessionStorageService
+    SessionStorageService,
+    CommonService
   ]
 })
-export class ServicesModule { }
+export class CommonServicesModule { }

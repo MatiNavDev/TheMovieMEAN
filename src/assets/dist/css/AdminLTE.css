@@ -557,13 +557,7 @@ a:focus {
 /*
  * Component: Sidebar Mini
  */
-.sidebar-mini {
-  background-color: #081c24;
-}
 @media (min-width: 768px) {
-  .sidebar-mini.sidebar-collapse {
-    background-color: #081c24;
-  }
   .sidebar-mini.sidebar-collapse .content-wrapper,
   .sidebar-mini.sidebar-collapse .right-side,
   .sidebar-mini.sidebar-collapse .main-footer {
@@ -619,9 +613,6 @@ a:focus {
   .sidebar-mini.sidebar-collapse .main-header .navbar {
     margin-left: 50px;
   }
-}
-.sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse {
-  background-color: #081c24;
 }
 .sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li:hover > a > span:not(.pull-right),
 .sidebar-mini:not(.sidebar-mini-expand-feature).sidebar-collapse .sidebar-menu > li:hover > .treeview-menu {
@@ -917,7 +908,6 @@ a:focus {
 /*Dropdowns in general*/
 .dropdown-menu {
   box-shadow: none;
-  border-color: #eee;
 }
 .dropdown-menu > li > a {
   color: #777;
@@ -928,11 +918,8 @@ a:focus {
   margin-right: 10px;
 }
 .dropdown-menu > li > a:hover {
-  background-color: #e1e3e9;
-  color: #333;
-}
-.dropdown-menu > .divider {
-  background-color: #eee;
+  background-color: #01eb85;
+  color: #01d277;
 }
 .navbar-nav > .notifications-menu > .dropdown-menu,
 .navbar-nav > .messages-menu > .dropdown-menu,
@@ -2427,8 +2414,8 @@ a:focus {
 .nav > li > a:hover,
 .nav > li > a:active,
 .nav > li > a:focus {
-  color: #444;
-  background: #f7f7f7;
+  color: #22fe9e;
+  background: #081c24;
 }
 /* NAV PILLS */
 .nav-pills > li > a {
