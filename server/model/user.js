@@ -37,7 +37,7 @@ const userSchema = new Schema({
 
 
 /**
- * Genera el hash y guarda dicho hash en la base de datos
+ * Genera el hash y guarda dicho hash en la base de datos previo guardado del usuario
  */
 userSchema.pre('save', function(next) {
     // Metodo propio del schema => this corresponde al userSchema
