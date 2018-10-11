@@ -7,14 +7,18 @@ const routes: Routes = [
   {
     path:'',
     component:HomeComponent,
-    canActivate:[
-      AuthGuard
+    canActivate:[AuthGuard],
+    children:[
+      {
+        path:'',
+        redirectTo:'busquedas',
+        pathMatch:'full'
+      },
+      {
+        path:'busquedas',
+        loadChildren: "../../app/search/search.module#SearchModule"
+      }
     ]
-  },
-  {
-    path:'home',
-    component:HomeComponent,
-    canActivate:[AuthGuard]
   }
 ];
 
