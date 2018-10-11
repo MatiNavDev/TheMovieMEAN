@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-const bcrypt = require('bcrypt')
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const Schema = mongoose.Schema
 
 const userSchema = new Schema({
@@ -26,7 +26,6 @@ const userSchema = new Schema({
     },
     image: { 
         type: String,
-        required: true
      },
     location: {type: Schema.Types.ObjectId, ref: 'Location'},
     posts: [{type: Schema.Types.ObjectId, ref: 'Post'}], // posts creados por el usuario

@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const config = require('./config');
+const config = require('./config/config');
 const bodyParser = require('body-parser');
 const userRoutes = require('./routes/user');
 const path = require('path');
@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 
 
 // ------ rutas -----
-app.use('/api/v1/auth', userRoutes);
+app.use('/theMovieMeanAPI/v1/auth', userRoutes);
 
 
 
@@ -37,4 +37,4 @@ app.get('*', function (req, res) {
 // Establece el puerto 3001 o el del entorno
 const PORT = process.env.PORT || 3002;
 
-app.listen(PORT, () => console.log('I am running'));
+app.listen(PORT, () => console.log('I am running in port: ' + PORT));
