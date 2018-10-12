@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import * as moment from 'moment'
-import { DecodedToken } from 'src/app/auth/models/decodedToken.model';
 import { SessionStorageService } from 'src/app/common/services/session.storage.service';
+import { DecodedToken } from '../models/decodedToken.model';
 
 const jwt = new JwtHelperService();
 
@@ -11,26 +11,24 @@ const jwt = new JwtHelperService();
 @Injectable()
 export class SessionService {
 
-    decodedToken
+    public decodedToken;
 
-    constructor( private sessionStrgSrvc: SessionStorageService) {
-
-        this.decodedToken = this.sessionStrgSrvc.getSessionDecodedToken() || new DecodedToken()
-        
-
+    constructor(private sessionStrgSrvc: SessionStorageService) {
+        this.decodedToken = this.sessionStrgSrvc.getDecodedToken() ||  new DecodedToken();        
     }
 
-    private getExpiration(){
-        return moment.unix(this.decodedToken.exp)
+    private getExpiration() {
+        return moment.unix(this.decodedToken.exp);
     }
 
-    isAuthenticated(){
-        return moment().isBefore(this.getExpiration())
+    public isAuthenticated() {
+        this.decodedToken = this.sessionStrgSrvc.getDecodedToken() ||  new DecodedToken();        
+        return moment().isBefore(this.getExpiration());
     }
 
-    logout(){
-        this.sessionStrgSrvc.removeToken()
-        this.decodedToken = new DecodedToken()
+    public logout() {
+        this.sessionStrgSrvc.removeTokens();
+        this.decodedToken = new DecodedToken();
     }
 
 

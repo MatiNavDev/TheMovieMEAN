@@ -1,11 +1,12 @@
+import { AuthGuard } from './../common/guards/guard-auth.service';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { SearchComponent } from 'src/app/search/search.component';
+import { ForumComponent } from 'src/app/forum/forum.component';
 
 const routes: Routes = [
   {
-    path: '',
-    component: SearchComponent
+    path:'',
+    component:ForumComponent
   }
 ];
 
@@ -13,4 +14,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class SearchRoutingModule { }
+export class ForumRoutingModule { }

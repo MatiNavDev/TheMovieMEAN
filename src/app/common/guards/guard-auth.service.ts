@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate {
     constructor(private sessionSrvc: SessionService, private router: Router, ) { }
 
     private isLoginOrRegisterPage(state): boolean {
-        if (state.url.includes('auth')) {
+        if (state.url.includes('autenticacion')) {
             return true
         }
         return false
@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
 
     private handleUserAuthenticated(state): boolean {
         if (this.isLoginOrRegisterPage(state)) {
-            this.router.navigate(['/rental'])
+            this.router.navigate(['/home/busquedas'])
             return false
         }
 
@@ -30,7 +30,7 @@ export class AuthGuard implements CanActivate {
 
     private handleUserNotAuthenticated(state): boolean {
         if (!this.isLoginOrRegisterPage(state)) {
-            this.router.navigate(['/auth'])
+            this.router.navigate(['/home/auth'])
             return false
         }
 
@@ -38,13 +38,11 @@ export class AuthGuard implements CanActivate {
     }
     canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
 
-        return true; // TODO: borrar cuando ande bien
-
-        /*if (this.sessionSrvc.isAuthenticated()) {
-            return this.handleUserAuthenticated(state)
+        if (this.sessionSrvc.isAuthenticated()) {
+            return this.handleUserAuthenticated(state);
         }
 
-        return this.handleUserNotAuthenticated(state)*/
+        return this.handleUserNotAuthenticated(state);
     }
 
 }

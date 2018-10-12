@@ -1,22 +1,36 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent } from 'src/app/home/home.component';
-import { AuthGuard } from 'src/app/common/guards/guard-auth.service';
 
 const routes: Routes = [
   {
-    path:'',
-    component:HomeComponent,
-    canActivate:[AuthGuard],
-    children:[
+    path: '',
+    component: HomeComponent,
+    children: [
       {
-        path:'',
-        redirectTo:'busquedas',
-        pathMatch:'full'
+        path: '',
+        redirectTo: 'busquedas',
+        pathMatch: 'full'
       },
       {
-        path:'busquedas',
+        path: 'busquedas',
         loadChildren: "../../app/search/search.module#SearchModule"
+      },
+      {
+        path: 'usuarios-cerca',
+        loadChildren: "../../app/close-users/close-users.module#CloseUsersModule"
+      },
+      {
+        path: 'foro',
+        loadChildren: "../../app/forum/forum.module#ForumModule"
+      },
+      {
+        path: 'perfil',
+        loadChildren: "../../app/profile/profile.module#ProfileModule"
+      },
+      {
+        path: 'autenticacion',
+        loadChildren: "../../app/auth/auth.module#AuthModule"
       }
     ]
   }

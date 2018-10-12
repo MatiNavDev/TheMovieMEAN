@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { SearchComponent } from 'src/app/search/search.component';
+import { CloseUsersComponent } from 'src/app/close-users/close-users.component';
 
 const routes: Routes = [
   {
-    path: '',
-    component: SearchComponent
-  }
+    path:'',
+    component:CloseUsersComponent
+    }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class SearchRoutingModule { }
+export class CloseUsersRoutingModule { }

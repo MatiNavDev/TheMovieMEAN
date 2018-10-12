@@ -1,49 +1,49 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { StorageService } from 'src/app/common/services/storage.service';
 
 
 @Injectable()
 export class SessionStorageService {
-  private localStorage: Storage
 
-  static get KEY_SESSIONTOKEN() { return 'KeySessionToken'; }
-  static get KEY_SESSIONDECODEDTOKEN() { return 'KeySessionDecodedToken'; }
+  private TOKEN_KEY = 'TOKEN_KEY'
+  private DECODED_TOKEN_KEY = 'DECODED_TOKEN_KEY'
 
-  constructor() {
-    this.localStorage = window.localStorage
+  constructor(private storageSrvc: StorageService) { }
+
+
+  // ----------------- Sets ----------------------
+
+
+  public setToken(token: string) {
+      this.storageSrvc.saveToStorage(this.TOKEN_KEY, token);
   }
 
-  
-  // ------------  sets -----------------
-
-  setSessionToken(token: string){
-    var tokenString = JSON.stringify(token)
-     this.localStorage.setItem(SessionStorageService.KEY_SESSIONTOKEN, tokenString)
-  }
-  setSessionDecodedToken(token: string){
-    var tokenString = JSON.stringify(token)
-     this.localStorage.setItem(SessionStorageService.KEY_SESSIONDECODEDTOKEN, tokenString)
+  public setDecodedToken(token: string) {
+      this.storageSrvc.saveToStorage(this.DECODED_TOKEN_KEY, token);
   }
 
 
-  // ------------- gets ----------------
+  // ----------------- Gets ----------------------
 
 
-  getSessionToken() {
-    return JSON.parse(this.localStorage.getItem(SessionStorageService.KEY_SESSIONTOKEN))
-  }
-  getSessionDecodedToken() {
-    return JSON.parse(this.localStorage.getItem(SessionStorageService.KEY_SESSIONDECODEDTOKEN))
+  public getToken() {
+      return this.storageSrvc.getFromStorage(this.TOKEN_KEY);
   }
 
 
-  // ------------ Removes ----------------
-
-
-  removeToken(){
-      this.localStorage.removeItem(SessionStorageService.KEY_SESSIONTOKEN)
-      this.localStorage.removeItem(SessionStorageService.KEY_SESSIONDECODEDTOKEN)
+  public getDecodedToken() {
+      return this.storageSrvc.getFromStorage(this.DECODED_TOKEN_KEY);
   }
+
+
+  // ----------------- Removes ----------------------
+
+
+  removeTokens(){
+    this.storageSrvc.removeFromStorage(this.TOKEN_KEY);
+    this.storageSrvc.removeFromStorage(this.DECODED_TOKEN_KEY);
+}
 
 
 }

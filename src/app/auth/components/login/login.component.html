@@ -1,3 +1,30 @@
-<p>
-  login works!
-</p>
+<div class="custom-form">
+  <div class="col-md-5 with-margin">
+    <form [formGroup]="loginForm" (submit)="onLogin()">
+      <div class="form-group">
+        <h3 for="exampleInputEmail1">Mail</h3>
+        <input type="email" class="form-control" id="email" formControlName="email" placeholder="Ejemplo@ejemplo.com">
+        <small id="emailHelp" class="form-text text-muted">Nunca compartiremos tu mail con terceros.</small>
+      </div>
+      <div class="form-group">
+        <h3 for="password">Contaseña</h3>
+        <input type="password" class="form-control" id="password" formControlName="password" placeholder="xxxxxxxx">
+      </div>
+      <button type="submit" [disabled]="!loginForm.valid" class="btn btn-primary">Ingresar</button>
+    </form>
+    <div class="alert alert-danger" *ngIf="errors.length >0">
+      <div *ngFor="let error of errors">
+        {{error.description}}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <p class="image-header">
+      Creado con la API de:
+    </p>
+    <div class="image-container img-wrappered">
+      <img src="https://www.themoviedb.org/assets/1/v4/logos/312x276-primary-blue-fb50dee3bf664c866fd216e6cee64af33d20707ea3091ddc65c5e8aa4c152eb2.png"
+        alt="">
+    </div>
+  </div>
+</div>
