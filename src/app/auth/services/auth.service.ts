@@ -26,12 +26,12 @@ export class AuthService {
      * Maneja un login exitoso
      */
     private handleSuccessfullLogin(token: string, observer: Subscriber<any>) {
-        this.sessionsrvc.decodedToken = this.jwt.decodeToken(token);
-        this.sessionStrgSrvc.setDecodedToken(this.sessionsrvc.decodedToken);
+        const decodedToken = this.jwt.decodeToken(token);
+        this.sessionsrvc.setDecodedToken(decodedToken); 
+        this.sessionStrgSrvc.setDecodedToken(decodedToken);
         this.sessionStrgSrvc.setToken(token);
         observer.next('ok');
         observer.complete();
-        debugger;
     }
 
 

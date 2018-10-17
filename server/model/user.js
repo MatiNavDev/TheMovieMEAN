@@ -13,7 +13,6 @@ const userSchema = new Schema({
         required: 'Email is required',
         lowercase: true,
         unique: true,
-        required: 'Email is required',
         min: [4, 'Too short, min is 4 characters'],
         max: [32, 'Too long, max is 32 characters'],
         match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/]
