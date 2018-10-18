@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 
 
 const userRoutes = require('./routes/user');
+const imageUploadRoutes = require('./routes/image-upload');
 const path = require('path');
 const DB = require('./db/mongooseDB');
 
@@ -19,6 +20,7 @@ app.use(bodyParser.json());
 
 
 app.use('/api/v1/auth', userRoutes);
+app.use('/api/v1', imageUploadRoutes);
 
 
 
