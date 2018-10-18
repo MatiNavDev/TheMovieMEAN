@@ -1,4 +1,4 @@
-const upload = require('../services/image-upload');
+const upload = require('../services/s3/index').imageUpload;
 
 
 

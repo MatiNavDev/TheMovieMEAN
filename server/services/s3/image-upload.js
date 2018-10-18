@@ -3,7 +3,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 
 
-const config = require('../config/config');
+const config = require('../../config/config');
 
 aws.config.update({
     secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
@@ -11,7 +11,8 @@ aws.config.update({
     region: 'us-east-2'
 });
 
-const s3 = new aws.S3();
+
+const s3 = new aws.S3();    
 
 
 
@@ -34,6 +35,7 @@ const fileFilter = function (req, file, cb) {
 };
 
 
+
 /**
  * Setea el multer
  */
@@ -42,8 +44,8 @@ const upload = multer({
     storage: multerS3({
         acl: 'public-read',
         s3,
-        contentType:multerS3.AUTO_CONTENT_TYPE,
-        bucket: 'the-movie-mean',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        bucket: config.S3_BUCKET,
         metadata: function (req, file, cb) {
             cb(null, { fieldName: 'TESTING_METADATA' });
         },

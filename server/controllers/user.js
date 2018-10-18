@@ -12,8 +12,9 @@ const mongooseHelpers = require('../helpers/mongoose');
  * @param {*} token 
  */
 function parseToken(token) {
-  // token = 'Bearer ********...'
-  return jwt.decode(token.split(' ')[1], config.SECRET);
+  
+    return jwt.decode(token, config.SECRET);
+
 }
 
 
@@ -167,15 +168,19 @@ function register(req, res) {
  * @param {*} next 
  */
 function authMiddleware(req, res, next) {
+
   const token = req.headers.authorization;
+  const jwtToken = token.split(' ')[1]
   let userReceived;
-  if (token) {
+  if (jwtToken) {
 
     try {
-      userReceived = parseToken(token);
+      userReceived = parseToken(jwtToken);
     } catch (e) {
       return res.status(422).send({ errors: [{ title: 'No autorizado !', description: 'Token inválido.' }] })
     }
+
+    
 
     User.findById(userReceived.userId)
     .then(userFound=>{
