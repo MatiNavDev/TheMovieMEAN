@@ -10,10 +10,11 @@ const s3Service = require('../services/s3/index');
 const { app } = require('../index');
 
 
-
-
-
-describe('IMAGE-UPLOAD TEST: /api/v1/image-upload', function () {
+/**
+ * Limpia todas las imagenes almacenadas en el s3 bucket
+ * @param {*} params 
+ */
+function cleanAll() {
     before((done)=>{
         s3Service.imageDelete()
         .then(res=>{
@@ -21,6 +22,12 @@ describe('IMAGE-UPLOAD TEST: /api/v1/image-upload', function () {
         })
         .catch(e=>done(e));
     });
+}
+
+
+
+describe('IMAGE-UPLOAD TEST: /api/v1/image-upload', function () {
+    cleanAll();
 
 
     it('should update correctly an image', (done) => {

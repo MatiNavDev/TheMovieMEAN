@@ -34,20 +34,6 @@ const userSchema = new Schema({
 });
 
 
-/**
- * Genera el hash y guarda dicho hash en la base de datos previo guardado del usuario
- */
-userSchema.pre('save', function(next) {
-    // Metodo propio del schema => this corresponde al userSchema
-    const user = this
-
-    bcrypt.genSalt(10, function(err, salt) {
-        bcrypt.hash(user.password, salt, function(err, hash) {
-            user.password = hash
-            next()
-        });
-    });
-})
 
 
 /**

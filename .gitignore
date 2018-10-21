@@ -39,4 +39,5 @@ testem.log
 Thumbs.db
 
 #config files
-/server/config
+/server/config/dev.js
+/server/config/test.js

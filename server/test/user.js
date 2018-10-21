@@ -12,16 +12,19 @@ const userOne = {
     confirmPassword: 'userOne'
 };
 
-
-
-
-describe('USER TEST: /api/v1/auth', function () {
+function cleanAlmosEvery(){
     beforeEach((done) => {
         userModel.deleteMany({ email : { $ne: "userone@userone.com" } })
             .then(() => {
                 return done();
             })
     });
+};
+
+
+
+describe('USER TEST: /api/v1/auth', function () {
+    cleanAlmosEvery();
     
     this.timeout(5000);
 
@@ -162,12 +165,8 @@ describe('USER TEST: /api/v1/auth', function () {
     describe('POST /api/v1/auth/login', () => {
         this.timeout(4000);
         
-        beforeEach((done) => {
-            userModel.deleteMany({ email : { $ne: "userone@userone.com" } })
-                .then(() => {
-                    return done();
-                })
-        });
+        cleanAlmosEvery();
+
 
         it('#should authenticate correctly to an user', (done) => {
             this.timeout(4000);
