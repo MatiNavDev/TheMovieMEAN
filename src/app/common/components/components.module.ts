@@ -4,13 +4,11 @@ import { HeaderComponent } from 'src/app/common/components/header/header.compone
 import { MenuComponent } from 'src/app/common/components/menu/menu.component';
 import { FooterComponent } from './footer/footer.component';
 import { RouterModule } from '@angular/router';
-import { CommonServicesModule } from 'src/app/common/services/services.module';
 
 @NgModule({
   imports: [
     CommonModule,
     RouterModule,
-    CommonServicesModule
   ],
   exports:[
     HeaderComponent,

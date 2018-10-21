@@ -26,6 +26,7 @@ export class AuthService {
      * Maneja un login exitoso
      */
     private handleSuccessfullLogin(token: string, observer: Subscriber<any>) {
+        this.sessionsrvc.setSessionMode(true);
         const decodedToken = this.jwt.decodeToken(token);
         this.sessionsrvc.setDecodedToken(decodedToken); 
         this.sessionStrgSrvc.setDecodedToken(decodedToken);
