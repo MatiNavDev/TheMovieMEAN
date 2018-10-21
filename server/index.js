@@ -25,7 +25,7 @@ app.use('/api/v1', imageUploadRoutes);
 
 
 // Configuracion para heroku
-const appPath = path.join(__dirname, '..', 'dist/the-complete-angular-react-node-guide');
+const appPath = path.join(__dirname, '..', 'dist/TheMovieMEAN');
 app.use(express.static(appPath));
 
 app.get('*', function (req, res) {
