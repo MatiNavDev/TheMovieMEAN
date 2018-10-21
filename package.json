@@ -3,13 +3,18 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "npm run start --prefix server",
+    "build": "ng build --prod",
+    "heroku-postbuild": "npm run build",
     "start-dev": "ng serve --proxy-config proxy.conf.json",
-    "build": "ng build",
     "test-server": "export NODE_ENV=test && mocha server/**/*.test.js",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
+  },
+  "engines": {
+    "node": "10.11.0",
+    "npm": "6.4.1"
   },
   "private": true,
   "dependencies": {
