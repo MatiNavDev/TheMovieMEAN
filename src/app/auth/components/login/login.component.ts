@@ -12,7 +12,7 @@ import { SessionService } from 'src/app/common/services/session.service';
 export class LoginComponent implements OnInit {
 
   loginForm: FormGroup;
-  errors = {};
+  errors: any = {};
 
   constructor(
     private formBuilder: FormBuilder, private authSrvc:AuthService, private router:Router, private sessionSrvc:SessionService
