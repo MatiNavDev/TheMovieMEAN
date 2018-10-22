@@ -9,44 +9,53 @@ import { SessionStorageService } from './session.storage.service';
 export class SessionService {
 
     private decodedTokenStore = new BehaviorSubject<any>(new DecodedToken());
-    private decodedTokenObservable= this.decodedTokenStore.asObservable();
+    private decodedTokenObservable = this.decodedTokenStore.asObservable();
     private sessionModeStore = new BehaviorSubject<any>(false);
     private sessionModeObservable = this.sessionModeStore.asObservable();
 
+    private decodedToken: any;
+
     constructor(private sessionStrgSrvc: SessionStorageService) {
-        const decodedToken = this.sessionStrgSrvc.getDecodedToken() ||  new DecodedToken();     
-        this.setDecodedToken(decodedToken);
+        this.decodedToken = this.sessionStrgSrvc.getDecodedToken() || new DecodedToken();
+        this.setDecodedToken(this.decodedToken);
+        this.subscribeToDecodedtoken();
     }
+
+
+    private subscribeToDecodedtoken() {
+        this.getDecodedToken()
+            .subscribe(dectoken => this.decodedToken = dectoken);
+    }
+
 
     /**
      * Obtiene la expiracion del token
      */
-    private getExpiration() {
-        this.getDecodedToken()
-        .subscribe(
-            decodedToken => {
-                return moment.unix(decodedToken.exp);
-        });
+    private getExpiration(): any {
+        return moment.unix(this.decodedToken.exp)
     }
 
 
-    public setDecodedToken(token){
+    ///// GETs & SETs /////
+
+
+    public setDecodedToken(token) {
         this.decodedTokenStore.next(token);
     }
 
-    public setSessionMode(sessionMode){
+    public setSessionMode(sessionMode) {
         this.sessionModeStore.next(sessionMode);
     }
 
-    public getSessionMode(){
+    public getSessionMode() {
         return this.sessionModeObservable;
     }
 
-    public getDecodedToken(): Observable<any>{
+    public getDecodedToken(): Observable<any> {
         return this.decodedTokenObservable;
     }
 
-    
+
     /**
      * Devuelve si esta autenticado
      */
