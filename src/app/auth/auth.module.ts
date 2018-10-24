@@ -6,7 +6,8 @@ import { AuthRoutingModule } from './auth-routing.module';
 import { RegisterComponent } from './components/register/register.component';
 import { LoginComponent } from 'src/app/auth/components/login/login.component';
 import { GuardsModule } from 'src/app/common/guards/guards.module';
-import { AuthService } from 'src/app/auth/services/auth.service';
+import { AuthRequestService } from 'src/app/auth/services/auth-request.service';
+import { ComponentsModule } from '../common/components/components.module';
 
 @NgModule({
   imports: [
@@ -15,9 +16,10 @@ import { AuthService } from 'src/app/auth/services/auth.service';
     ReactiveFormsModule,
     AuthRoutingModule,
     GuardsModule,
+    ComponentsModule
   ],
   providers:[
-    AuthService
+    AuthRequestService
   ],
   declarations: [
     LoginComponent, 

@@ -95,7 +95,6 @@ function login(req, res) {
  * @param {*} res 
  */
 function register(req, res) {
-
   const {
     password,
     email,
@@ -126,10 +125,10 @@ function register(req, res) {
     email
   }, (err, userFound) => {
 
-    // Si hay error
     if (err) {
       return res.status(422).send(mongooseHelpers.normalizeErrors(err.errors));
     }
+
     if (userFound) {
       return res.status(422).send({
         errors: [{
@@ -151,9 +150,15 @@ function register(req, res) {
         return res.status(422).send(mongooseHelpers.normalizeErrors(err.errors));
       }
 
+      const token = jwt.sign({
+        userId: user._id,
+        username: user.username
+      }, config.SECRET, {
+          expiresIn: '1h'
+        });
       res.send({
-        registered: true,
-        user
+        user,
+        token
       });
     });
 
@@ -170,6 +175,12 @@ function register(req, res) {
 function authMiddleware(req, res, next) {
 
   const token = req.headers.authorization;
+
+  if(!token){
+    return res.status(422).send({ errors: [{ title: 'No autorizado !', description: 'Token no enviado.' }] })
+  }
+
+
   const jwtToken = token.split(' ')[1]
   let userReceived;
   if (jwtToken) {

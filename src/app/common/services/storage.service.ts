@@ -5,7 +5,7 @@ import { Injectable } from "@angular/core";
 export class StorageService {
     private storage: Storage
 
-    constructor(){
+    constructor() {
         this.storage = window.localStorage
     }
 
@@ -14,10 +14,8 @@ export class StorageService {
      * @param key 
      * @param data 
      */
-    public saveToStorage(key: string, data: any){
-        if(typeof data !== "string"){
-            data = JSON.stringify(data);
-        }
+    public saveToStorage(key: string, data: any) {
+        data = JSON.stringify(data);
         this.storage.setItem(key, data);
     }
 
@@ -26,12 +24,12 @@ export class StorageService {
      * Obtiene el objeto desde el storage y lo parsea para devolverlo como fue seteado
      * @param key 
      */
-    public getFromStorage(key: string): any{
+    public getFromStorage(key: string): any {
         return JSON.parse(this.storage.getItem(key));
     }
 
 
-    public removeFromStorage(key: string){
+    public removeFromStorage(key: string) {
         return this.storage.removeItem(key);
     }
 }

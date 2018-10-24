@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const _ = require('lodash');
+
 const Schema = mongoose.Schema
 
 const userSchema = new Schema({
@@ -34,6 +36,29 @@ const userSchema = new Schema({
 });
 
 
+// Este metodo ya existe pero lo sobreescribe para mandar esto desp. Copado.
+userSchema.methods.toJSON = function () {
+    let user = this;
+    let userObj = user.toObject();
+
+    return _.pick(userObj, ["email","_id", "username", "image"]);
+}
+
+
+/**
+ * Hashea la contraseña de los usuarios previo a guardarlos
+ */
+userSchema.pre('save', function(next) {
+    const user = this;
+
+    bcrypt.genSalt(10, function(err, salt) {
+        bcrypt.hash(user.password, salt, function(err, hash) {
+            user.password = hash;
+            next();
+        });
+    });
+})
+
 
 
 /**
@@ -44,6 +69,7 @@ userSchema.methods.hasSamePassword = function (requestedPassword){
     // Metodo propio del schema (por eso this.password)
     return bcrypt.compareSync(requestedPassword, this.password)
 }
+
 
 
 module.exports = mongoose.model('User', userSchema)

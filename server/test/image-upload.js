@@ -42,8 +42,9 @@ describe('IMAGE-UPLOAD TEST: /api/v1/image-upload', function () {
             .expect(200)
             .expect((res, err) => {
                 if (err) done(err);
-
-                expect(_.isString(res.body.imageUrl)).toBeTruthy();
+                expect(res.body.user).toBeTruthy();
+                expect(_.isString(res.body.user.image)).toBeTruthy();
+                
             })
             .end((err) => {
                 if (err) return done(err);

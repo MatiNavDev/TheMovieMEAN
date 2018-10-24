@@ -24,10 +24,14 @@
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/manifest.json",
+              "src/manifest.json",
+              "src/manifest.json"
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/angular2-toaster/toaster.min.css"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
@@ -45,7 +49,6 @@
               "src/assets/plugins/jvectormap/jquery-jvectormap-1.2.2.min.js",
               "src/assets/plugins/jvectormap/jquery-jvectormap-world-mill-en.js",
               "src/assets/bower_components/jquery-slimscroll/jquery.slimscroll.min.js",
-              "src/assets/dist/js/pages/dashboard2.js",
               "src/assets/dist/js/demo.js"
             ]
           },
@@ -65,7 +68,8 @@
               "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true
+              "buildOptimizer": true,
+              "serviceWorker": true
             }
           }
         },
@@ -100,7 +104,10 @@
             "scripts": [],
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/manifest.json",
+              "src/manifest.json",
+              "src/manifest.json"
             ]
           }
         },

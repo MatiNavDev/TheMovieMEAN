@@ -1,3 +1,4 @@
+import { DecodedToken } from './../models/decodedToken.model';
 import { Injectable } from '@angular/core';
 import { StorageService } from '../services/storage.service';
 
@@ -18,8 +19,8 @@ export class SessionStorageService {
       this.storageSrvc.saveToStorage(this.TOKEN_KEY, token);
   }
 
-  public setDecodedToken(token: string) {
-      this.storageSrvc.saveToStorage(this.DECODED_TOKEN_KEY, token);
+  public setDecodedToken(decodedToken: DecodedToken) {
+      this.storageSrvc.saveToStorage(this.DECODED_TOKEN_KEY, decodedToken);
   }
 
 

@@ -1,0 +1,22 @@
+<label *ngIf="!imageChangedEvent" class="image-upload-container btn-primary">
+  <span>Subir Imagen</span>
+  <input type='file' accept='image/*' (change)="onProcessFile($event)">
+</label>
+
+<image-cropper *ngIf="showCropper" [imageChangedEvent]="imageChangedEvent" [maintainAspectRatio]="true" [aspectRatio]="4 / 3"
+  [resizeToWidth]="422" format="jpeg" (imageCroppedFile)="imageCropped($event)"></image-cropper>
+
+
+<button *ngIf="showCropper" (click)='onSaveImage()' class='btn btn-success' type='button'>
+  Listo
+</button>
+
+<button *ngIf="showCropper" (click)='onCancelCropping()' class='btn btn-danger' type='button'>
+  Cancelar
+</button>
+
+<div *ngIf="selectedFile && selectedFile.src" class="img-preview-container">
+    <i class="fa fa-times-circle" aria-hidden="true" (click)="onRemoveImg()"></i>
+  <div class="img-preview" [ngStyle]="{'background-image': 'url(' + selectedFile.src + ')'}">
+  </div>
+</div>

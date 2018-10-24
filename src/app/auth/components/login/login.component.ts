@@ -1,8 +1,9 @@
+import { ErrorHandlerService } from './../../../common/services/error-handler.service';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { AuthService } from 'src/app/auth/services/auth.service';
+import { AuthRequestService } from 'src/app/auth/services/auth-request.service';
 import { Router } from '@angular/router';
-import { SessionService } from 'src/app/common/services/session.service';
+import { LoadingService } from 'src/app/common/services/loading.service';
 
 @Component({
   selector: 'app-login',
@@ -11,33 +12,37 @@ import { SessionService } from 'src/app/common/services/session.service';
 })
 export class LoginComponent implements OnInit {
 
-  loginForm: FormGroup;
-  errors: any = {};
+  public loginForm: FormGroup;
+  public errors: any = {};
 
   constructor(
-    private formBuilder: FormBuilder, private authSrvc:AuthService, private router:Router, private sessionSrvc:SessionService
+    private formBuilder: FormBuilder, private authRequestSrvc: AuthRequestService, private router: Router, private errorSrvc: ErrorHandlerService,
+    private loadingSrvc:LoadingService
   ) { }
 
   ngOnInit() {
     this.initForm();
   }
 
-  private initForm(){
+  private initForm() {
     this.loginForm = this.formBuilder.group({
-      email:['',[Validators.required, Validators.pattern("^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$")]],
-      password:['',[Validators.required, Validators.minLength(8)]]
+      email: ['', [Validators.required, Validators.pattern("^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$")]],
+      password: ['', [Validators.required, Validators.minLength(8)]]
     });
   }
 
-  public onLogin(){
-    this.authSrvc.login(this.loginForm.value)
-    .subscribe(
-      res=>{
-        this.router.navigate(['../busquedas']);
-      },
-      errors=>{
-        alert(JSON.stringify(errors,undefined,2));
-      }
-    )
+  public onLogin() {
+    this.loadingSrvc.show();
+    this.authRequestSrvc.userLogin(this.loginForm.value)
+      .subscribe(
+        res => {
+          this.loadingSrvc.hide();
+          this.router.navigate(['../busquedas']);
+        },
+        errors => {
+          this.loadingSrvc.hide();
+          this.errorSrvc.showErrorsToUser(errors);
+        }
+      )
   }
 }
