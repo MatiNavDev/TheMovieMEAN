@@ -8,10 +8,10 @@ if (environment.production) {
   enableProdMode();
 }
 
-
+const self = this;
 this.ngZone.runOutsideAngular(() => {
   this.slideIntervalId = setInterval(() => {
-    this.ngZone.run(() => {
+    self.ngZone.run(() => {
       platformBrowserDynamic().bootstrapModule(AppModule).then(() => {
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register('ngsw-worker.js').then(function (registration) {
