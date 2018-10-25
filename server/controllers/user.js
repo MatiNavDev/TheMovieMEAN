@@ -73,7 +73,12 @@ function login(req, res) {
       }, config.SECRET, {
           expiresIn: '1h'
         });
-      return res.json(token);
+
+      return res.json({
+        token,
+        user
+      });
+      
     } else {
       return res.status(422).send({
         errors: [{

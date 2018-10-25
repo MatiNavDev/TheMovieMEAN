@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { ToasterModule, ToasterService } from 'angular2-toaster';
+import { ToasterService } from 'angular2-toaster';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+  })
 export class ToastService {
 
 

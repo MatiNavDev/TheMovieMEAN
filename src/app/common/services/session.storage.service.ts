@@ -3,7 +3,9 @@ import { Injectable } from '@angular/core';
 import { StorageService } from '../services/storage.service';
 
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+  })
 export class SessionStorageService {
 
   private TOKEN_KEY = 'TOKEN_KEY'

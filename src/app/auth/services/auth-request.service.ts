@@ -7,40 +7,33 @@ import { Observable } from 'rxjs/internal/Observable';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { Subscriber } from 'rxjs/internal/Subscriber';
 import { ErrorHandlerService } from 'src/app/common/services/error-handler.service';
-import { mergeMap, catchError } from 'rxjs/operators';
+import { mergeMap } from 'rxjs/operators';
+import { of} from 'rxjs';
+import { AuthStorageService } from './auth.storage.service';
 
 
-
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+  })
 export class AuthRequestService {
 
-    private host: string;
     private jwt = new JwtHelperService();
 
     constructor(
-        private http: HttpClient, private sessionStrgSrvc: SessionStorageService,
+        private http: HttpClient, private sessionStrgSrvc: SessionStorageService, private authStgSrvc:AuthStorageService,
         private errorSrvc: ErrorHandlerService, public sessionsrvc: SessionService
     ) {
     }
 
-    /**
-     * Maneja un login exitoso
-     */
-    private handleSuccessfullLogin(token: string, observer: Subscriber<any>) {
-        this.sessionsrvc.setSessionMode(true);
-        const decodedToken = this.jwt.decodeToken(token);
-        this.sessionsrvc.setDecodedToken(decodedToken);
-        this.sessionStrgSrvc.setDecodedToken(decodedToken);
-        this.sessionStrgSrvc.setToken(token);
 
-    }
 
 
     /**
-     * Maneja un registro exitoso
+     * Maneja una autenticación exitoso
      * @param user 
      */
-    private handleSuccessfullRegister(user: any, observer: Subscriber<any>) {
+    private handleSuccessfullAuth(user: any, observer: Subscriber<any>) {
+        this.authStgSrvc.setUser(user);
         observer.next('ok');
         observer.complete();
     }
@@ -50,6 +43,7 @@ export class AuthRequestService {
      * @param token 
      */
     private setToken(token:string){
+        this.sessionsrvc.setSessionMode(true);
         const decodedtoken:DecodedToken = this.jwt.decodeToken(token);
         this.sessionStrgSrvc.setToken(token);
         this.sessionStrgSrvc.setDecodedToken(decodedtoken);
@@ -78,8 +72,9 @@ export class AuthRequestService {
         return new Observable((observer) => {
             this.http.post('/api/v1/auth/login', data)
                 .subscribe(
-                    (token: string) => {
-                        this.handleSuccessfullLogin(token, observer);
+                    (response: any) => {
+                        this.setToken(response.token);
+                        this.handleSuccessfullAuth(response.user, observer);
                     },
                     (error: any) => {
                         this.errorSrvc.handleUniversalError(error, observer);
@@ -99,12 +94,15 @@ export class AuthRequestService {
             mergeMap((response: any)=>{
                 user = response.user;
                 this.setToken(response.token);
-                return this.uploadImage(data.img)
+                if(data.img){
+                    return this.uploadImage(data.img)
+                }
+                return of();
             })
         )
                 .subscribe(
-                    res => {
-                        this.handleSuccessfullRegister(user, observer);
+                    () => {
+                        this.handleSuccessfullAuth(user, observer);
                     },
                     (error: any) => {
                         this.errorSrvc.handleUniversalError(error, observer);

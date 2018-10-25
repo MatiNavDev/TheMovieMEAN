@@ -6,7 +6,6 @@ import { AuthRoutingModule } from './auth-routing.module';
 import { RegisterComponent } from './components/register/register.component';
 import { LoginComponent } from 'src/app/auth/components/login/login.component';
 import { GuardsModule } from 'src/app/common/guards/guards.module';
-import { AuthRequestService } from 'src/app/auth/services/auth-request.service';
 import { ComponentsModule } from '../common/components/components.module';
 
 @NgModule({
@@ -17,9 +16,6 @@ import { ComponentsModule } from '../common/components/components.module';
     AuthRoutingModule,
     GuardsModule,
     ComponentsModule
-  ],
-  providers:[
-    AuthRequestService
   ],
   declarations: [
     LoginComponent, 

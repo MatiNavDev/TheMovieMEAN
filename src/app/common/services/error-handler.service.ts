@@ -4,7 +4,9 @@ import { Subscriber } from 'rxjs/internal/Subscriber';
 import { ToastService } from './toast.service';
 
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+  })
 export class ErrorHandlerService {
 
     constructor(

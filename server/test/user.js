@@ -1,5 +1,6 @@
 const expect = require('expect');
 const request = require('supertest');
+const _ = require('lodash');
 
 
 const {
@@ -222,9 +223,14 @@ describe('USER TEST: /api/v1/auth', function () {
         .send(userOne)
         .expect(200)
         .expect((res) => {
-          expect(typeof res.body).toBe('string');
+          expect(typeof res.body.token).toBe('string');
+          expect(res.body.user).toHaveProperty("email", "userone@userone.com");
         })
-        .end(done)
+        .end(err=>{
+          if(err) return done(err);
+
+          return done();
+        })
     });
 
     it('#should throw 422 with no user', (done) => {

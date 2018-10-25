@@ -34,12 +34,6 @@ import { environment } from '../environments/environment';
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
   ],
   providers: [
-    SessionService,
-    SessionStorageService,
-    StorageService,
-    CommonService,
-    ErrorHandlerService,
-    ToastService,
     {
       provide : HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,

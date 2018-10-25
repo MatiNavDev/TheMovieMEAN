@@ -6,7 +6,9 @@ import {
 import { SessionService } from 'src/app/common/services/session.service';
 import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+  })
 export class AuthGuard implements CanActivate {
     private url: string
 

@@ -4,7 +4,6 @@ import { AuthGuard } from 'src/app/common/guards/guard-auth.service';
 @NgModule({
   imports:[
   ],
-  declarations: [],
-  providers:[AuthGuard]
+  declarations: []
 })
 export class GuardsModule { }

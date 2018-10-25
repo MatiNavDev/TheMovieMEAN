@@ -5,7 +5,9 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { SessionStorageService } from './session.storage.service';
 
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+  })
 export class SessionService {
 
     private decodedTokenStore = new BehaviorSubject<any>(new DecodedToken());
