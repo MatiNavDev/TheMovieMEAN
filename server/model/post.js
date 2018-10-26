@@ -22,10 +22,6 @@ const postSchema = new Schema({
         type: Date, 
         default: Date.now 
     },
-    image: { 
-        type: String, 
-        required: true 
-    },
     user: {type: Schema.Types.ObjectId, ref: 'User'},
     comments: [{type: Schema.Types.ObjectId, ref: 'Comment'}],
 });  

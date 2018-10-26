@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 
 
 const userRoutes = require('./routes/user');
+const postRoutes = require('./routes/post');
+const commentRoutes = require('./routes/comment');
 const imageUploadRoutes = require('./routes/image-upload');
 const path = require('path');
 const DB = require('./db/mongooseDB');
@@ -19,6 +21,8 @@ app.use(bodyParser.json());
 // ------ rutas -----
 
 
+app.use('/api/v1/posts', postRoutes);
+app.use('/api/v1/comments', commentRoutes);
 app.use('/api/v1/auth', userRoutes);
 app.use('/api/v1', imageUploadRoutes);
 
