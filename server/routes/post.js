@@ -13,5 +13,13 @@ router.get('/user/*?', AuthMiddleware.authMiddleware ,PostController.getPostsFro
 router.get('/*?', AuthMiddleware.authMiddleware ,PostController.getPosts);
 
 
+router.patch('', AuthMiddleware.authMiddleware ,PostController.patchPost);
+
+
+router.post('', AuthMiddleware.authMiddleware ,PostController.postNewPost);
+
+
+
+
 
 module.exports = router;

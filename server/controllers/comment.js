@@ -2,7 +2,15 @@ const mongooseHelpers = require('../helpers/mongoose');
 const Comment = require('../model/comment');
 
 
-
+/**
+ * Verifica si un comentrio pertenece a un usuario
+ * @param {*} comment 
+ * @param {*} user 
+ */
+function verifyCommentFromUser(comment, user) {
+    
+    return true;
+}
 
 
 
@@ -50,6 +58,28 @@ function getCommentsFromUser(req, res){
 }
 
 
+/**
+ * Modifica un comentario
+ * @param {*} req 
+ * @param {*} res 
+ */
+function patchComment(req, res) {
+    
+    return res.send('patchComment');
+}
+
+
+/**
+ * Crea un nuevo comentario
+ * @param {*} req 
+ * @param {*} res 
+ */
+function postNewComment(req, res) {
+
+    return res.send('postNewComment');  
+}
+
+
 
 
 
@@ -59,5 +89,7 @@ function getCommentsFromUser(req, res){
 
 module.exports = {
     getCommentsFromPost,
-    getCommentsFromUser
+    getCommentsFromUser,
+    patchComment,
+    postNewComment
 }

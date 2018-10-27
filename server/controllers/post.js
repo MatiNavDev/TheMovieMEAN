@@ -1,6 +1,17 @@
 const mongooseHelper = require('../helpers/mongoose');
 const Post = require('../model/post');
 
+/**
+ * Verifica si un post pertenece a un usuario
+ * @param {*} post 
+ * @param {*} user 
+ */
+function verifyCommentFromUser(post, user) {
+    
+  return true;
+}
+
+
 
 
 
@@ -60,6 +71,29 @@ function getPostsFromUser(req, res) {
 }
 
 
+/**
+ * Modifica un post
+ * @param {*} req 
+ * @param {*} res 
+ */
+function patchPost(req, res) {
+    
+  return res.send('patchPost');  
+
+}
+
+
+/**
+ * Crea un nuevo comentario
+ * @param {*} req 
+ * @param {*} res 
+ */
+function postNewPost(req, res) {
+    
+  return res.send('postNewPost');  
+
+}
+
 
 
 
@@ -68,5 +102,7 @@ function getPostsFromUser(req, res) {
 
 module.exports = {
   getPosts,
-  getPostsFromUser
+  getPostsFromUser,
+  patchPost,
+  postNewPost
 }

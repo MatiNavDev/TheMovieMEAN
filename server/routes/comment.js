@@ -10,6 +10,9 @@ router.get('/post/:postId/*?', AuthMiddleware.authMiddleware, CommentController.
 
 router.get('/*?', AuthMiddleware.authMiddleware, CommentController.getCommentsFromUser);
 
+router.patch('', AuthMiddleware.authMiddleware, CommentController.patchComment)
+
+router.post('', AuthMiddleware.authMiddleware, CommentController.postNewComment)
 
 
 module.exports = router;
