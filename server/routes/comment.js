@@ -5,14 +5,12 @@ const AuthMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
+router.get('/user/*?', AuthMiddleware.authMiddleware, CommentController.getCommentsFromUser);
 
-router.get('/post/:postId/*?', AuthMiddleware.authMiddleware, CommentController.getCommentsFromPost);
+router.get('/:postId', AuthMiddleware.authMiddleware, CommentController.getCommentsFromPost);
 
-router.get('/*?', AuthMiddleware.authMiddleware, CommentController.getCommentsFromUser);
+router.patch('', AuthMiddleware.authMiddleware, CommentController.patchComment);
 
-router.patch('', AuthMiddleware.authMiddleware, CommentController.patchComment)
-
-router.post('', AuthMiddleware.authMiddleware, CommentController.postNewComment)
-
+router.post('', AuthMiddleware.authMiddleware, CommentController.postNewComment);
 
 module.exports = router;

@@ -8,15 +8,11 @@ import { SwService } from './common/services/sw.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-
-  constructor(
-    private sessionSrvc: SessionService, private swSrvc:SwService
-  ) {
+  constructor(private sessionSrvc: SessionService, private swSrvc: SwService) {
     this.swSrvc.setServiceWorker();
   }
 
   ngOnInit() {
     this.sessionSrvc.isAuthenticated();
   }
-
 }

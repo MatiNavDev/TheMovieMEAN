@@ -35,9 +35,9 @@ import { environment } from '../environments/environment';
   ],
   providers: [
     {
-      provide : HTTP_INTERCEPTORS,
+      provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
-      multi   : true,
+      multi: true,
     },
   ],
   bootstrap: [AppComponent]

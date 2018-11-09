@@ -14,27 +14,27 @@ export class MenuComponent implements OnInit, OnDestroy {
   sessionMode: boolean;
 
   constructor(
-    private sessionSrvc:SessionService, private cdRef:ChangeDetectorRef) { }
+    private sessionSrvc: SessionService, private cdRef: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.subscribeToSessionMode();
   }
 
-  ngOnDestroy(){
+  ngOnDestroy() {
     this.destroy$.next(true);
   }
 
-  private subscribeToSessionMode(){
+  private subscribeToSessionMode() {
     this.sessionSrvc.getSessionMode()
-    .pipe(
-      takeUntil(this.destroy$)
-    )
-    .subscribe(sessionMode=>{
-      this.sessionMode = sessionMode;
-    })
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe(sessionMode => {
+        this.sessionMode = sessionMode;
+      })
 
-  
-    
+
+
   }
 
 }

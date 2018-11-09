@@ -5,10 +5,9 @@ const ImageUploadController = require('../controllers/image-upload');
 const AuthMiddleware = require('../middleware/authMiddleware');
 
 
-
 const router = express.Router();
 
-router.post('/image-upload', AuthMiddleware.authMiddleware ,ImageUploadController.imageUpload);
+router.post('/image-upload', AuthMiddleware.authMiddleware, ImageUploadController.imageUpload);
 
 
-module.exports = router
+module.exports = router;

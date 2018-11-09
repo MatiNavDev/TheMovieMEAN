@@ -46,6 +46,8 @@
     "ng4-loading-spinner": "^1.2.3",
     "ngx-image-cropper": "^1.2.2",
     "rxjs": "^6.0.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "typescript-eslint-parser": "^20.1.1",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
@@ -57,6 +59,14 @@
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
     "codelyzer": "~4.2.1",
+    "eslint": "^5.8.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-prettier": "^3.0.0",
+    "eslint-plugin-react": "^7.11.1",
     "expect": "^23.6.0",
     "grunt": "^1.0.2",
     "grunt-contrib-copy": "^1.0.0",
@@ -70,10 +80,14 @@
     "karma-jasmine-html-reporter": "^0.2.2",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.4",
+    "prettier": "^1.15.1",
     "protractor": "~5.4.0",
     "supertest": "^3.3.0",
     "ts-node": "~5.0.1",
-    "tslint": "~5.9.1",
     "typescript": "~2.7.2"
+  },
+  "env": {
+    "node": true,
+    "mocha": true
   }
 }

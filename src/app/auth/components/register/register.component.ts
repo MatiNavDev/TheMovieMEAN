@@ -11,41 +11,46 @@ import { ErrorHandlerService } from 'src/app/common/services/error-handler.servi
   styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent implements OnInit {
-
   public errors = [];
   public regForm: FormGroup;
 
   constructor(
-    private formBuilder:FormBuilder, private authRequestSrvc:AuthRequestService, private router:Router, private errorSrvc:ErrorHandlerService,
-    private loadingSrvc:LoadingService
-  ) { }
+    private formBuilder: FormBuilder,
+    private authRequestSrvc: AuthRequestService,
+    private router: Router,
+    private errorSrvc: ErrorHandlerService,
+    private loadingSrvc: LoadingService
+  ) {}
 
   ngOnInit() {
     this.initForm();
   }
 
-
   /**
    * Inicia el formulario
    */
-  private initForm(){
+  private initForm() {
     this.regForm = this.formBuilder.group({
-      username:['',[Validators.required, Validators.minLength(1)]],
-      email:['',[Validators.required, Validators.pattern("^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$")]],
-      password:['',[Validators.required, Validators.minLength(8)]],
-      confirmPassword:['',[Validators.required, Validators.minLength(8)]],
-      img:['']
+      username: ['', [Validators.required, Validators.minLength(1)]],
+      email: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern('^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:.[a-zA-Z0-9-]+)*$')
+        ]
+      ],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', [Validators.required, Validators.minLength(8)]],
+      img: ['']
     });
   }
-
 
   /**
    * Maneja el registrar un usuario
    */
-  public onRegister(){
+  public onRegister() {
     this.loadingSrvc.show();
-    this.authRequestSrvc.userRegister(this.regForm.value)
-    .subscribe(
+    this.authRequestSrvc.userRegister(this.regForm.value).subscribe(
       res => {
         this.loadingSrvc.hide();
         this.router.navigate(['../busquedas']);
@@ -54,16 +59,14 @@ export class RegisterComponent implements OnInit {
         this.loadingSrvc.hide();
         this.errorSrvc.showErrorsToUser(errors);
       }
-    )
+    );
   }
-
 
   /**
    * Maneja el evento del actualizado de img
-   * @param imgFile 
+   * @param imgFile
    */
-  public onUpdatedImg(imgFile){
+  public onUpdatedImg(imgFile) {
     this.regForm.controls['img'].setValue(imgFile);
   }
-
 }
