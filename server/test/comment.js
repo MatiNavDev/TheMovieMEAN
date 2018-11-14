@@ -208,7 +208,7 @@ describe('COMMENT TEST: /api/v1/comments', function() {
     });
   });
 
-  describe('DELETE /:commentId', function(done) {
+  describe('DELETE /:commentId', function() {
     this.timeout(10000);
     it('#should delete a comment, updating user and post related', function(done) {
       this.timeout(10000);

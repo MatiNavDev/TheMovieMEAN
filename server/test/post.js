@@ -329,7 +329,7 @@ describe('POST TEST: /api/v1/posts', function() {
     });
   });
 
-  describe('DELETE /:postId', function(done) {
+  describe('DELETE /:postId', function() {
     this.timeout(10000);
     it('#should delete a post, updating user and deleting comments related', function(done) {
       this.timeout(10000);
