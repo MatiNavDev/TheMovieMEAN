@@ -7,10 +7,12 @@ const router = express.Router();
 
 router.get('/user/*?', AuthMiddleware.authMiddleware, CommentController.getCommentsFromUser);
 
-router.get('/:postId', AuthMiddleware.authMiddleware, CommentController.getCommentsFromPost);
+router.get('/:postId/*?', AuthMiddleware.authMiddleware, CommentController.getCommentsFromPost);
 
-router.patch('', AuthMiddleware.authMiddleware, CommentController.patchComment);
+router.patch('/:commentId', AuthMiddleware.authMiddleware, CommentController.patchComment);
 
-router.post('', AuthMiddleware.authMiddleware, CommentController.postNewComment);
+router.post('/:postId', AuthMiddleware.authMiddleware, CommentController.postNewComment);
+
+router.delete('/:commentId', AuthMiddleware.authMiddleware, CommentController.deleteComment);
 
 module.exports = router;

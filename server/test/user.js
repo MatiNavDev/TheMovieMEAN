@@ -2,25 +2,27 @@ const expect = require('expect');
 const request = require('supertest');
 
 const { app } = require('../index');
-const userModel = require('./../model/user');
-
-function cleanAlmosEvery() {
+const User = require('./../model/user');
+const { refreshDB } = require('../db/testDB-setter');
+/**
+ * Limpia toda la bd
+ * @param {*} params
+ */
+function cleanDB() {
   beforeEach(done => {
-    userModel
-      .deleteMany({
-        email: {
-          $ne: 'userone@userone.com'
-        }
+    refreshDB()
+      .then(() => {
+        done();
       })
-      .then(() => done())
-      .catch(e => done(e));
+      .catch(e => {
+        done(e);
+      });
   });
 }
 
 describe('USER TEST: /api/v1/auth', function() {
   this.timeout(5000);
-
-  cleanAlmosEvery();
+  cleanDB();
 
   describe('POST /authMiddleware', function() {
     this.timeout(5000);
@@ -69,10 +71,9 @@ describe('USER TEST: /api/v1/auth', function() {
         .end(err => {
           expect(err).toBe(null);
 
-          userModel
-            .findOne({
-              email: user.email
-            })
+          User.findOne({
+            email: user.email
+          })
             .then(foundUser => {
               expect(foundUser).toHaveProperty('username', user.username);
               expect(foundUser.hasSamePassword(user.password)).toBeTruthy();
@@ -89,19 +90,22 @@ describe('USER TEST: /api/v1/auth', function() {
         email: 'userOne@userOne.com',
         password: 'userOne1234'
       };
-
       request(app)
         .post('/api/v1/auth/register')
+        .send(userOne)
         .expect(422)
-        .end(async err => {
-          if (err) done(err);
+        .expect(res => {
+          expect(res.body.errors).toContainEqual({
+            title: 'Campos no enviados!',
+            description: 'Usuario, Contraseña, Confirmacion Contraseña y Email son requeridos.'
+          });
+        })
+        .end(err => {
+          if (err) return done(err);
 
-          userModel
-            .find({
-              email: userOne.email
-            })
+          User.find({})
             .then(users => {
-              expect(users.length).toBe(1);
+              expect(users.length).toBe(2);
               return done();
             })
             .catch(e => done(e));
@@ -112,25 +116,30 @@ describe('USER TEST: /api/v1/auth', function() {
       this.timeout(4000);
 
       const userOne = {
-        email: 'userOne@userOne.com',
+        email: 'test@test.com',
         username: 'userOne',
-        password: 'userOne1234'
+        password: 'userOne1234',
+        confirmPassword: 'userOne1234'
       };
 
       request(app)
         .post('/api/v1/auth/register')
+        .send(userOne)
         .expect(422)
+        .expect(res => {
+          expect(res.body.errors).toContainEqual({
+            title: 'Error con Email!',
+            description: 'Email duplicado.'
+          });
+        })
         .end(err => {
           if (err) {
             return done(err);
           }
 
-          userModel
-            .find({
-              email: userOne.email
-            })
+          User.find({})
             .then(users => {
-              expect(users.length).toBe(1);
+              expect(users.length).toBe(2);
               return done();
             })
             .catch(e => done(e));
@@ -141,7 +150,7 @@ describe('USER TEST: /api/v1/auth', function() {
       this.timeout(4000);
 
       const userOne = {
-        email: 'userTwo@userTwo.com',
+        email: 'userTwo1@userTwo1.com',
         username: 'userTwo',
         password: 'userTwoasdada',
         confirmPassword: 'userTwo'
@@ -151,21 +160,18 @@ describe('USER TEST: /api/v1/auth', function() {
         .post('/api/v1/auth/register')
         .send(userOne)
         .expect(422)
-        .expect(async res => {
+        .expect(res => {
           expect(res.body.errors).toContainEqual({
             title: 'Error con Contraseñas!',
             description: 'Las Contraseñas no coinciden.'
           });
         })
-        .end(async err => {
-          expect(err).toBeNull();
+        .end(err => {
+          if (err) return done(err);
 
-          userModel
-            .find({
-              email: userOne.email
-            })
+          User.find()
             .then(users => {
-              expect(users.length).toBe(0);
+              expect(users.length).toBe(2);
               done();
             })
             .catch(e => done(e));
@@ -176,14 +182,12 @@ describe('USER TEST: /api/v1/auth', function() {
   describe('POST /api/v1/auth/login', function() {
     this.timeout(4000);
 
-    cleanAlmosEvery();
-
     it('#should authenticate correctly to an user', function(done) {
       this.timeout(4000);
 
       const userOne = {
-        email: 'userone@userone.com',
-        password: 'userOne'
+        email: 'test@test.com',
+        password: 'testtest'
       };
 
       request(app)
@@ -192,7 +196,7 @@ describe('USER TEST: /api/v1/auth', function() {
         .expect(200)
         .expect(res => {
           expect(typeof res.body.token).toBe('string');
-          expect(res.body.user).toHaveProperty('email', 'userone@userone.com');
+          expect(res.body.user).toHaveProperty('email', 'test@test.com');
         })
         .end(err => {
           if (err) return done(err);
@@ -240,8 +244,8 @@ describe('USER TEST: /api/v1/auth', function() {
         .expect(422)
         .expect(res => {
           expect(res.body.errors).toContainEqual({
-            title: 'Usuario y Contraseña invalidos !',
-            description: 'El Usuario o la Contraseña no existen.'
+            title: 'Error !',
+            description: 'Usuario no encontrado.'
           });
         })
         .end(err => {

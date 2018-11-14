@@ -4,18 +4,18 @@ const _ = require('lodash');
 const path = require('path');
 
 const s3Service = require('../services/s3/index');
+const { refreshDB } = require('../db/testDB-setter');
 const { app } = require('../index');
 const User = require('../model/user');
 const tokenSrvc = require('../services/token/token');
 
 /**
- * Limpia todas las imagenes almacenadas en el s3 bucket
+ * Limpia todas las imagenes almacenadas en el s3 bucket y Refresca la base de datos
  * @param {*} params
  */
-function cleanAll() {
-  before(done => {
-    s3Service
-      .imageDelete()
+function cleanImagesAndBD() {
+  beforeEach(done => {
+    Promise.all([s3Service.imageDelete(), refreshDB()])
       .then(() => {
         done();
       })
@@ -24,11 +24,11 @@ function cleanAll() {
 }
 
 describe('IMAGE-UPLOAD TEST: /api/v1/image-upload', function() {
-  cleanAll();
+  cleanImagesAndBD();
+  this.timeout(5000);
 
-  it('should update correctly an image', done => {
+  it('should update correctly an image', function(done) {
     this.timeout(5000);
-
     const imagePath = path.join(__dirname, '..', '/assets/test/Image.jpg');
 
     User.findOne({})
@@ -53,7 +53,9 @@ describe('IMAGE-UPLOAD TEST: /api/v1/image-upload', function() {
       .catch(e => done(e));
   });
 
-  it('should reject with not authorized error', done => {
+  it('should reject with not authorized error', function(done) {
+    this.timeout(5000);
+
     request(app)
       .post('/api/v1/image-upload')
       .set('Authorization', 'Bearer ')

@@ -1,7 +1,10 @@
+const { ObjectId } = require('mongoose');
+
 const mongooseHelpers = require('../helpers/mongoose');
-const requestHelperSrvc = require('../services/request-helpers/request-helpers');
+const { verifyPostsFromUser } = require('../services/request-helpers/request-helpers');
 const Post = require('../model/post');
 const User = require('../model/user');
+const Comment = require('../model/comment');
 
 // /////// public methods //////////////
 
@@ -62,24 +65,17 @@ async function getPostsFromUser(req, res) {
 async function patchPost(req, res) {
   const { user } = res.locals;
 
-  const { id } = req.params;
+  const { postId } = req.params;
 
   const { title, message } = req.body;
 
-  const properties = {
-    title,
-    message
-  };
-
   try {
-    const post = await Post.findById(id);
-
-    if (!post) {
-      return res.status(400).send({
+    if (!postId) {
+      return res.status(409).send({
         errors: [
           {
             title: 'Id Erroneo',
-            description: 'El id no corresponde a ningún post'
+            description: 'El id del post debe ser enviado'
           }
         ]
       });
@@ -96,7 +92,7 @@ async function patchPost(req, res) {
       });
     }
 
-    const isVerified = await requestHelperSrvc.verifyPostsFromUser(post.id, user.id);
+    const isVerified = verifyPostsFromUser(postId, user);
 
     if (!isVerified) {
       return res.status(403).send({
@@ -109,12 +105,14 @@ async function patchPost(req, res) {
       });
     }
 
-    const patchedPost = requestHelperSrvc.patchObject(properties, post);
+    const properties = {
+      title,
+      message
+    };
 
-    post.set(patchedPost);
-    await post.save();
+    const post = await Post.update({ _id: postId }, { $set: properties });
 
-    return res.send(post);
+    return res.send({ post });
   } catch (e) {
     res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
   }
@@ -160,14 +158,14 @@ async function postNewPost(req, res) {
       }
     };
 
+    await User.updateOne(query, docUpdate);
+
     const parsedPost = {
       _id: post._id,
       title: post.title,
       message: post.message,
       createdAt: post.createdAt
     };
-
-    await User.updateOne(query, docUpdate);
 
     return res.send({
       post: parsedPost
@@ -177,9 +175,56 @@ async function postNewPost(req, res) {
   }
 }
 
+/**
+ * Borra el post especificado actualizando el usuario y los comentarios asociados al post
+ * @param {*} req
+ * @param {*} res
+ */
+async function deletePost(req, res) {
+  /**
+   * Primero valida que el post le pertenezca al user,
+   * despues elimina los comentarios asociados al post, y despues
+   * elimina el post.
+   * por ultimo actualiza el post del la lista de posts del usuario
+   */
+
+  try {
+    const { postId } = req.params;
+    const { user } = res.locals;
+
+    const isVerified = verifyPostsFromUser(postId, user);
+
+    if (!isVerified) {
+      return res.status(403).send({
+        errors: [
+          {
+            title: 'Error de Permisos !',
+            description: 'El post no le pertenece al usuario.'
+          }
+        ]
+      });
+    }
+    await Comment.deleteMany({ post: postId });
+
+    const respDeletePost = await Post.findByIdAndDelete(postId);
+
+    const query = { _id: user.id };
+    const docUpdateUser = {
+      $pull: { posts: postId }
+    };
+
+    await User.updateOne(query, docUpdateUser);
+
+    res.send({ deletedPost: respDeletePost });
+  } catch (e) {
+    res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+  }
+}
+
 module.exports = {
   getPosts,
   getPostsFromUser,
   patchPost,
-  postNewPost
+  postNewPost,
+  deletePost
 };

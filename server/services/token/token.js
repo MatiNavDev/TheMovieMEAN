@@ -14,7 +14,7 @@ function makeToken(user) {
     },
     config.SECRET,
     {
-      expiresIn: '1h'
+      expiresIn: '4h'
     }
   );
 }

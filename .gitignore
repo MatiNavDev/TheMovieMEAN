@@ -41,3 +41,4 @@ Thumbs.db
 #config files
 /server/config/dev.js
 /server/config/test.js
+/server/db/testDB-setter.js

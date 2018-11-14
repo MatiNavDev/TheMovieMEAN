@@ -2,51 +2,23 @@ const expect = require('expect');
 const request = require('supertest');
 
 const { app } = require('../index');
-const tokenSrvc = require('../services/token/token');
+const { makeToken } = require('../services/token/token');
 const User = require('../model/user');
 const Post = require('../model/post');
+const { refreshDB } = require('../db/testDB-setter');
 
 /**
- * Limpia todos los post
+ * Limpia toda la bd
  * @param {*} params
  */
-function cleanAll() {
-  let posts;
-  before(done => {
-    Post.find()
-      .limit(10)
-      .then(foundPosts => {
-        posts = foundPosts;
-        return Post.deleteMany();
-      })
-      .then(() => Post.insertMany(posts))
-      .then(() => done())
-      .catch(e => done(e));
-  });
-}
-
-/**
- * Agrega un usuario test
- * @param {*} params
- */
-function addTestUser() {
-  before(done => {
-    const user = new User({
-      username: 'Prueba',
-      password: 'Prueba',
-      email: 'Prueba@Prueba.com',
-      comments: [],
-      filters: [],
-      searches: [],
-      posts: []
-    });
-    user
-      .save()
-      .then(() => done())
-      .catch(e => {
-        // Esto esta por si el user esta duplicado
-        console.log(e);
+function cleanDB() {
+  beforeEach(done => {
+    refreshDB()
+      .then(() => {
         done();
+      })
+      .catch(e => {
+        done(e);
       });
   });
 }
@@ -56,8 +28,7 @@ const falsyToken =
 
 describe('POST TEST: /api/v1/posts', function() {
   this.timeout(4000);
-  cleanAll();
-  addTestUser();
+  cleanDB();
 
   describe('POST /', () => {
     it('should throw 401 with user no authenticated', done => {
@@ -81,7 +52,7 @@ describe('POST TEST: /api/v1/posts', function() {
     it('should throw 422 with missing data', done => {
       User.findOne()
         .then(user => {
-          const token = tokenSrvc.makeToken(user);
+          const token = makeToken(user);
 
           request(app)
             .post('/api/v1/posts')
@@ -110,7 +81,7 @@ describe('POST TEST: /api/v1/posts', function() {
             message: 'lili'
           };
 
-          const token = tokenSrvc.makeToken(user);
+          const token = makeToken(user);
 
           request(app)
             .post('/api/v1/posts')
@@ -159,7 +130,7 @@ describe('POST TEST: /api/v1/posts', function() {
             message: 'Patch Test Message'
           };
 
-          const token = tokenSrvc.makeToken(user);
+          const token = makeToken(user);
 
           request(app)
             .patch(`/api/v1/posts/${user.posts[0].id}`)
@@ -190,7 +161,7 @@ describe('POST TEST: /api/v1/posts', function() {
         .then(users => {
           const userWithPost = users.find(user => user.posts[0]);
           const otherUser = users.find(user => user.id !== userWithPost.id);
-          const tokenFromOtherUser = tokenSrvc.makeToken(otherUser);
+          const tokenFromOtherUser = makeToken(otherUser);
           const params = {
             title: 'Patch Test Title',
             message: 'Patch Test Message'
@@ -219,7 +190,7 @@ describe('POST TEST: /api/v1/posts', function() {
 
       User.findOne()
         .then(user => {
-          const token = tokenSrvc.makeToken(user);
+          const token = makeToken(user);
           const params = {
             title: 'Patch Test Title',
             message: 'Patch Test Message'
@@ -254,7 +225,7 @@ describe('POST TEST: /api/v1/posts', function() {
       })
         .populate('posts', '_id')
         .then(user => {
-          const token = tokenSrvc.makeToken(user);
+          const token = makeToken(user);
           const params = {
             title: 'Patch Test Title'
           };
@@ -283,7 +254,7 @@ describe('POST TEST: /api/v1/posts', function() {
     it('should get 1 posts', done => {
       User.findOne()
         .then(user => {
-          const token = tokenSrvc.makeToken(user);
+          const token = makeToken(user);
           const amount = 1;
           request(app)
             .get(`/api/v1/posts/${amount}`)
@@ -311,7 +282,7 @@ describe('POST TEST: /api/v1/posts', function() {
       Promise.all([User.findOne(), Post.find()])
         .then(resp => {
           const [user, posts] = resp;
-          const token = tokenSrvc.makeToken(user);
+          const token = makeToken(user);
 
           request(app)
             .get('/api/v1/posts')
@@ -355,6 +326,26 @@ describe('POST TEST: /api/v1/posts', function() {
 
           return done();
         });
+    });
+  });
+
+  describe('DELETE /:postId', function(done) {
+    this.timeout(10000);
+    it('#should delete a post, updating user and deleting comments related', function(done) {
+      this.timeout(10000);
+      done();
+    });
+    it('#should throw 404 with verification errors (wrong user)', function(done) {
+      this.timeout(10000);
+      done();
+    });
+    it('#should throw 404 with verification errors (post doesnt exist)', function(done) {
+      this.timeout(10000);
+      done();
+    });
+    it('#should throw 401 with user no authenticated', function(done) {
+      this.timeout(10000);
+      done();
     });
   });
 });

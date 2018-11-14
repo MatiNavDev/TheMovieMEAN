@@ -1,5 +1,3 @@
-const User = require('../../model/user');
-
 /**
  * Devuelve el objecto haciendo el patch en sus propiedades si es que las tiene
  * @param {*} properties
@@ -22,18 +20,28 @@ function patchObject(properties, object) {
  * @param {*} post
  * @param {*} user
  */
-async function verifyPostsFromUser(postId, userId) {
+function verifyPostsFromUser(postId, user) {
   // traer todos los posts id del user
   // verificar si ese array incluye el post id
 
-  const foundUser = await User.findById(userId)
-    .populate('posts', '_id')
-    .exec();
+  if (!postId || !user) return false;
 
-  return foundUser.posts.find(post => post.id === postId) !== undefined;
+  return user.posts.find(post => post._id.toString() === postId) !== undefined;
+}
+
+/**
+ * Verifica si un comment le pertenece al usuario
+ * @param {*} commentId
+ * @param {*} user
+ */
+function verifyCommentFromUser(commentId, user) {
+  if (!user || !commentId) return false;
+
+  return user.comments.find(comment => comment._id.toString() === commentId) !== undefined;
 }
 
 module.exports = {
   patchObject,
-  verifyPostsFromUser
+  verifyPostsFromUser,
+  verifyCommentFromUser
 };

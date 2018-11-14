@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const _ = require('lodash');
 
-const Schema = mongoose.Schema
+const { Schema } = mongoose;
 
 const userSchema = new Schema({
   username: {
@@ -26,66 +25,71 @@ const userSchema = new Schema({
     max: [32, 'Too long, max is 128 characters']
   },
   image: {
-    type: String,
+    type: String
   },
   location: {
     type: Schema.Types.ObjectId,
     ref: 'Location'
   },
-  posts: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Post'
-  }], // posts creados por el usuario
-  comments: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Comment'
-  }], // comentarios realizados en los distintos posts
-  filters: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Filter'
-  }],
-  searches: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Search'
-  }],
+  posts: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Post'
+    }
+  ], // posts creados por el usuario
+  comments: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Comment'
+    }
+  ], // comentarios realizados en los distintos posts
+  filters: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Filter'
+    }
+  ],
+  searches: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Search'
+    }
+  ]
 });
 
-
-userSchema.methods.toJSON = function () {
+userSchema.methods.toJSON = function() {
   const user = this;
   const userObj = user.toObject();
-  delete userObj["password"];
+  delete userObj.password;
 
   return userObj;
-}
-
-
+};
 
 /**
  * Hashea la contraseña de los usuarios previo a guardarlos
  */
-userSchema.pre('save', function (next) {
+userSchema.pre('save', function(next) {
   const user = this;
 
-  bcrypt.genSalt(10, function (err, salt) {
-    bcrypt.hash(user.password, salt, function (err, hash) {
+  bcrypt.genSalt(10, (errSalt, salt) => {
+    if (errSalt) throw errSalt;
+
+    bcrypt.hash(user.password, salt, (errHash, hash) => {
+      if (errHash) throw errHash;
+
       user.password = hash;
       next();
     });
   });
-})
-
-
+});
 
 /**
- *  Verifica si la password 
+ *  Verifica si la password
  * recibida coincide con la password hasheada por el usuario.
  */
-userSchema.methods.hasSamePassword = function (requestedPassword) {
+userSchema.methods.hasSamePassword = function(requestedPassword) {
   // Metodo propio del schema (por eso this.password)
-  return bcrypt.compareSync(requestedPassword, this.password)
-}
+  return bcrypt.compareSync(requestedPassword, this.password);
+};
 
-
-
-module.exports = mongoose.model('User', userSchema)
+module.exports = mongoose.model('User', userSchema);

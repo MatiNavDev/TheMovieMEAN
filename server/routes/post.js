@@ -15,4 +15,6 @@ router.patch('/:id', AuthMiddleware.authMiddleware, PostController.patchPost);
 
 router.post('', AuthMiddleware.authMiddleware, PostController.postNewPost);
 
+router.delete('/:postId', AuthMiddleware.authMiddleware, PostController.deletePost);
+
 module.exports = router;
