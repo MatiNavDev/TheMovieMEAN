@@ -7,9 +7,10 @@ const config = require('./../config/config');
  * @param {*} params
  */
 function configMongoose() {
-  mongoose.set('debug', (coll, method, query) => {
-    console.log(coll, method, query);
-  });
+  // Esto muestra las querys que hace mongoose
+  // mongoose.set('debug', (coll, method, query) => {
+  //   console.log(coll, method, query);
+  // });
   mongoose.set('useCreateIndex', true);
 }
 

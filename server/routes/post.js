@@ -11,7 +11,7 @@ router.get('/user/*?', AuthMiddleware.authMiddleware, PostController.getPostsFro
 // Obtiene los posts
 router.get('/*?', AuthMiddleware.authMiddleware, PostController.getPosts);
 
-router.patch('/:id', AuthMiddleware.authMiddleware, PostController.patchPost);
+router.patch('/:postId', AuthMiddleware.authMiddleware, PostController.patchPost);
 
 router.post('', AuthMiddleware.authMiddleware, PostController.postNewPost);
 

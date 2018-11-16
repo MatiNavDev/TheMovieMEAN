@@ -1,10 +1,11 @@
 const request = require('supertest');
 const expect = require('expect');
 
-const { refreshDB } = require('../db/testDB-setter');
+const { refreshDB, addSomeCommentsToPost } = require('../db/testDB-setter');
 const { app } = require('../index');
 const User = require('../model/user');
 const Post = require('../model/post');
+const Comment = require('../model/comment');
 const { makeToken } = require('../services/token/token');
 
 /**
@@ -116,7 +117,7 @@ describe('COMMENT TEST: /api/v1/comments', function() {
   describe('GET /:postId', function() {
     this.timeout(10000);
 
-    it('#should return 3 post comments', done => {
+    it('#should return 3 post comments', function(done) {
       this.timeout(10000);
 
       Promise.all([
@@ -150,7 +151,7 @@ describe('COMMENT TEST: /api/v1/comments', function() {
         })
         .catch(e => done(e));
     });
-    it('#should return default amount (10) post comments', done => {
+    it('#should return default amount (10) post comments', function(done) {
       this.timeout(10000);
 
       Promise.all([
@@ -184,7 +185,7 @@ describe('COMMENT TEST: /api/v1/comments', function() {
         })
         .catch(e => done(e));
     });
-    it('#should throw 401 with user no authenticated', done => {
+    it('#should throw 401 with user no authenticated', function(done) {
       this.timeout(10000);
       Post.findOne()
         .then(post => {
@@ -211,9 +212,88 @@ describe('COMMENT TEST: /api/v1/comments', function() {
   describe('DELETE /:commentId', function() {
     this.timeout(10000);
     it('#should delete a comment, updating user and post related', function(done) {
+      /**
+       * Obtener un post con 2 o + comments,
+       * enviar uno de esos para que se borre.
+       * Chequear que la respuesta sea la que vendria con un borrado exitoso
+       * Chequear que el user 'test' (que es el que tiene todo) despues no tenga ese comentario
+       * chequear que el post no tenga ese comentario
+       * obtener la lista de comentarios y chequear que no exista ese comentario
+       */
       this.timeout(10000);
-      done();
+
+      User.findOne({ 'posts.0': { $exists: true } })
+        .populate({
+          path: 'posts',
+          select: 'comments'
+        })
+        .then(user => {
+          const token = makeToken(user);
+
+          const postFromUser = user.posts[0];
+          addSomeCommentsToPost(postFromUser, user, 5);
+          Post.findById(postFromUser.id)
+            .populate({
+              path: 'comments',
+              select: 'post',
+              populate: { path: 'post', select: 'id' }
+            })
+            .then(postWithSeveralComments => {
+              expect(() => {
+                expect(postWithSeveralComments.comments.length).toBe(6);
+                expect(user.comments.length).toBeGreaterThanOrEqualTo(6);
+              });
+              postWithSeveralComments.comments.forEach(comment =>
+                expect(comment.post.id).toBe(postWithSeveralComments.id)
+              );
+              request(app)
+                .delete(`/api/v1/comments/${postWithSeveralComments.comments[0].id}`)
+                .set('Authorization', `Bearer ${token}`)
+                .expect(200)
+                .expect(res => {
+                  expect(res.body).toHaveProperty('deletedComment');
+                  expect(res.body.deletedComment._id).toBe(postWithSeveralComments.comments[0].id);
+
+                  const assertionsPromises = [
+                    User.findById(user.id).populate({ path: 'comments', select: 'id' }),
+                    Post.findById(postWithSeveralComments.id).populate({
+                      path: 'comments',
+                      select: 'id'
+                    }),
+                    Comment.find()
+                  ];
+                  Promise.all(assertionsPromises)
+                    .then(resp => {
+                      const [
+                        userWithDeletedComment,
+                        postWithDeletedComment,
+                        commentsWithDeletedComment
+                      ] = resp;
+                      const commentFromUserThatShouldBeUndefined = userWithDeletedComment.comments.find(
+                        comment => comment.id === res.body.deletedComment.id
+                      );
+                      const commentFromPostThatShouldBeUndefined = postWithDeletedComment.comments.find(
+                        comment => comment.id === res.body.deletedComment.id
+                      );
+                      const commentFromCommentsThatShouldBeUndefined = commentsWithDeletedComment.find(
+                        comment => comment.id === res.body.deletedComment.id
+                      );
+                      expect(commentFromUserThatShouldBeUndefined).toBeFalsy();
+                      expect(commentFromPostThatShouldBeUndefined).toBeFalsy();
+                      expect(commentFromCommentsThatShouldBeUndefined).toBeFalsy();
+                    })
+                    .catch(e => done(e));
+                })
+                .end(err => {
+                  if (err) return done(err);
+                  done();
+                });
+            })
+            .catch(e => done(e));
+        })
+        .catch(e => done(e));
     });
+
     it('#should throw 404 with verification errors (wrong user)', function(done) {
       this.timeout(10000);
       done();

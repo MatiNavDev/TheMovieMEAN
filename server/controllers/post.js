@@ -1,5 +1,3 @@
-const { ObjectId } = require('mongoose');
-
 const mongooseHelpers = require('../helpers/mongoose');
 const { verifyPostsFromUser } = require('../services/request-helpers/request-helpers');
 const Post = require('../model/post');
@@ -110,7 +108,9 @@ async function patchPost(req, res) {
       message
     };
 
-    const post = await Post.update({ _id: postId }, { $set: properties });
+    const post = await Post.findByIdAndUpdate(postId, { $set: properties }, { new: true }).select(
+      'message createdAt title'
+    );
 
     return res.send({ post });
   } catch (e) {

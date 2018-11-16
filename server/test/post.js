@@ -123,7 +123,7 @@ describe('POST TEST: /api/v1/posts', function() {
           $exists: true
         }
       })
-        .populate('posts', '_id')
+        .populate('posts', 'id')
         .then(user => {
           const params = {
             title: 'Patch Test Title',
@@ -138,20 +138,20 @@ describe('POST TEST: /api/v1/posts', function() {
             .send(params)
             .expect(200)
             .expect(res => {
-              expect(res.body).toMatchObject(params);
-            })
-            .end((err, res) => {
-              if (err) return expect(err).toBe(null);
-
-              Post.findById(res.body._id)
+              expect(res.body.post).toMatchObject(params);
+              Post.findById(res.body.post._id)
                 .then(foundPost => {
                   expect(foundPost).toBeTruthy();
                   expect(foundPost).toMatchObject(params);
-                  return done();
                 })
                 .catch(e => done(e));
+            })
+            .end(err => {
+              if (err) return done(err);
+              return done();
             });
-        });
+        })
+        .catch(e => done(e));
     });
 
     it('should throw 403 with permission error', function(done) {
@@ -185,7 +185,7 @@ describe('POST TEST: /api/v1/posts', function() {
         });
     });
 
-    it('should throw 400 with wrong id', function(done) {
+    it('should throw 403 with wrong id', function(done) {
       this.timeout(4000);
 
       User.findOne()
@@ -200,11 +200,11 @@ describe('POST TEST: /api/v1/posts', function() {
             .patch('/api/v1/posts/41224d776a326fb40f000001')
             .set('Authorization', `Bearer ${token}`)
             .send(params)
-            .expect(400)
+            .expect(403)
             .expect(res => {
               expect(res.body.errors).toContainEqual({
-                title: 'Id Erroneo',
-                description: 'El id no corresponde a ningún post'
+                description: 'El post no le pertenece al usuario.',
+                title: 'Error de Permisos !'
               });
             })
             .end(err => {
@@ -223,7 +223,7 @@ describe('POST TEST: /api/v1/posts', function() {
           $exists: true
         }
       })
-        .populate('posts', '_id')
+        .populate('posts', 'id')
         .then(user => {
           const token = makeToken(user);
           const params = {
@@ -231,7 +231,7 @@ describe('POST TEST: /api/v1/posts', function() {
           };
 
           request(app)
-            .patch(`/api/v1/posts/${user.posts[0]._id}`)
+            .patch(`/api/v1/posts/${user.posts[0].id}`)
             .set('Authorization', `Bearer ${token}`)
             .send(params)
             .expect(422)
@@ -251,7 +251,8 @@ describe('POST TEST: /api/v1/posts', function() {
   });
 
   describe('GET /', () => {
-    it('should get 1 posts', done => {
+    it('should get 1 posts', function(done) {
+      this.timeout(4000);
       User.findOne()
         .then(user => {
           const token = makeToken(user);
@@ -278,7 +279,8 @@ describe('POST TEST: /api/v1/posts', function() {
         .catch(e => done(e));
     });
 
-    it('should get all posts or 10 like max', done => {
+    it('should get all posts or 10 like max', function(done) {
+      this.timeout(4000);
       Promise.all([User.findOne(), Post.find()])
         .then(resp => {
           const [user, posts] = resp;
