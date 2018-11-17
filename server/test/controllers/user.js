@@ -1,9 +1,9 @@
 const expect = require('expect');
 const request = require('supertest');
 
-const { app } = require('../index');
-const User = require('./../model/user');
-const { refreshDB } = require('../db/testDB-setter');
+const { app } = require('../../index');
+const User = require('./../../model/user');
+const { refreshDB } = require('../../db/testDB-setter');
 /**
  * Limpia toda la bd
  * @param {*} params

@@ -1,12 +1,12 @@
 const request = require('supertest');
 const expect = require('expect');
 
-const { refreshDB, addSomeCommentsToPost } = require('../db/testDB-setter');
-const { app } = require('../index');
-const User = require('../model/user');
-const Post = require('../model/post');
-const Comment = require('../model/comment');
-const { makeToken } = require('../services/token/token');
+const { refreshDB, addSomeCommentsToPost } = require('../../db/testDB-setter');
+const { app } = require('../../index');
+const User = require('../../model/user');
+const Post = require('../../model/post');
+const Comment = require('../../model/comment');
+const { makeToken } = require('../../services/token/token');
 
 /**
  * Limpia toda la bd
@@ -37,10 +37,13 @@ describe('COMMENT TEST: /api/v1/comments', function() {
 
     it('#should return 3 comments for user', function(done) {
       this.timeout(10000);
+      addSomeCommentsToPost();
       User.findOne({
-        'comments.3': { $exists: true }
+        'posts.0': { $exists: true }
       })
+        .populate({ path: 'posts', select: 'id' })
         .then(user => {
+          addSomeCommentsToPost(user.posts[0], user, 2);
           if (!user) return done('No hay usuarios con mas de 3 comentarios, agregarlos');
 
           const token = makeToken(user);
@@ -67,9 +70,11 @@ describe('COMMENT TEST: /api/v1/comments', function() {
     it('#should return default amount (10) user comments', function(done) {
       this.timeout(10000);
       User.findOne({
-        'comments.9': { $exists: true }
+        'posts.0': { $exists: true }
       })
+        .populate({ path: 'posts', select: 'id' })
         .then(user => {
+          addSomeCommentsToPost(user.posts[0], user, 15);
           if (!user) return done('No hay usuarios con mas de 10 comentarios, agregarlos');
 
           const token = makeToken(user);
@@ -225,71 +230,58 @@ describe('COMMENT TEST: /api/v1/comments', function() {
       User.findOne({ 'posts.0': { $exists: true } })
         .populate({
           path: 'posts',
-          select: 'comments'
+          select: 'comments',
+          populate: {
+            path: 'comments',
+            select: 'id'
+          }
         })
         .then(user => {
           const token = makeToken(user);
+          request(app)
+            .delete(`/api/v1/comments/${user.posts[0].comments[0].id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200)
+            .expect(res => {
+              expect(res.body).toHaveProperty('deletedComment');
+              expect(res.body.deletedComment._id).toBe(user.posts[0].comments[0].id);
 
-          const postFromUser = user.posts[0];
-          addSomeCommentsToPost(postFromUser, user, 5);
-          Post.findById(postFromUser.id)
-            .populate({
-              path: 'comments',
-              select: 'post',
-              populate: { path: 'post', select: 'id' }
-            })
-            .then(postWithSeveralComments => {
-              expect(() => {
-                expect(postWithSeveralComments.comments.length).toBe(6);
-                expect(user.comments.length).toBeGreaterThanOrEqualTo(6);
-              });
-              postWithSeveralComments.comments.forEach(comment =>
-                expect(comment.post.id).toBe(postWithSeveralComments.id)
-              );
-              request(app)
-                .delete(`/api/v1/comments/${postWithSeveralComments.comments[0].id}`)
-                .set('Authorization', `Bearer ${token}`)
-                .expect(200)
-                .expect(res => {
-                  expect(res.body).toHaveProperty('deletedComment');
-                  expect(res.body.deletedComment._id).toBe(postWithSeveralComments.comments[0].id);
-
-                  const assertionsPromises = [
-                    User.findById(user.id).populate({ path: 'comments', select: 'id' }),
-                    Post.findById(postWithSeveralComments.id).populate({
-                      path: 'comments',
-                      select: 'id'
-                    }),
-                    Comment.find()
-                  ];
-                  Promise.all(assertionsPromises)
-                    .then(resp => {
-                      const [
-                        userWithDeletedComment,
-                        postWithDeletedComment,
-                        commentsWithDeletedComment
-                      ] = resp;
-                      const commentFromUserThatShouldBeUndefined = userWithDeletedComment.comments.find(
-                        comment => comment.id === res.body.deletedComment.id
-                      );
-                      const commentFromPostThatShouldBeUndefined = postWithDeletedComment.comments.find(
-                        comment => comment.id === res.body.deletedComment.id
-                      );
-                      const commentFromCommentsThatShouldBeUndefined = commentsWithDeletedComment.find(
-                        comment => comment.id === res.body.deletedComment.id
-                      );
-                      expect(commentFromUserThatShouldBeUndefined).toBeFalsy();
-                      expect(commentFromPostThatShouldBeUndefined).toBeFalsy();
-                      expect(commentFromCommentsThatShouldBeUndefined).toBeFalsy();
-                    })
-                    .catch(e => done(e));
+              const assertionsPromises = [
+                User.findById(user.id).populate({ path: 'comments', select: 'id' }),
+                Post.findById(user.posts[0].id).populate({
+                  path: 'comments',
+                  select: 'id'
+                }),
+                Comment.find()
+              ];
+              Promise.all(assertionsPromises)
+                .then(resp => {
+                  const [
+                    userWithDeletedComment,
+                    postWithDeletedComment,
+                    commentsWithDeletedComment
+                  ] = resp;
+                  const commentFromUserThatShouldBeUndefined = userWithDeletedComment.comments.find(
+                    comment => comment.id === res.body.deletedComment.id
+                  );
+                  const commentFromPostThatShouldBeUndefined = postWithDeletedComment.comments.find(
+                    comment => comment.id === res.body.deletedComment.id
+                  );
+                  const commentFromCommentsThatShouldBeUndefined = commentsWithDeletedComment.find(
+                    comment => comment.id === res.body.deletedComment.id
+                  );
+                  expect(commentFromUserThatShouldBeUndefined).toBeFalsy();
+                  expect(commentFromPostThatShouldBeUndefined).toBeFalsy();
+                  expect(commentFromCommentsThatShouldBeUndefined).toBeFalsy();
                 })
-                .end(err => {
-                  if (err) return done(err);
-                  done();
-                });
+                .catch(e => done(e));
             })
-            .catch(e => done(e));
+            .end(err => {
+              if (err) return done(err);
+              done();
+            });
+          // })
+          // .catch(e => done(e));
         })
         .catch(e => done(e));
     });
