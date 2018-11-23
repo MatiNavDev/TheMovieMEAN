@@ -16,22 +16,20 @@ const tokenSrvc = require('../../services/token/token');
 function cleanImagesAndBD() {
   beforeEach(done => {
     Promise.all([s3Service.imageDelete(), refreshDB()])
-      .then(() => {
-        done();
-      })
+      .then(() => done())
       .catch(e => done(e));
   });
 }
 
 describe('IMAGE-UPLOAD TEST: /api/v1/image-upload', function() {
   cleanImagesAndBD();
-  this.timeout(5000);
+  this.timeout(10000);
 
   it('should update correctly an image', function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     const imagePath = path.join(__dirname, '..', '..', '/assets/test/Image.jpg');
 
-    User.findOne({})
+    User.findOne()
       .then(user => {
         const token = tokenSrvc.makeToken(user);
 
@@ -46,7 +44,7 @@ describe('IMAGE-UPLOAD TEST: /api/v1/image-upload', function() {
           })
           .end(err => {
             if (err) return done(err);
-            done();
+            return done();
           });
       })
       .catch(e => done(e));
@@ -67,7 +65,7 @@ describe('IMAGE-UPLOAD TEST: /api/v1/image-upload', function() {
       })
       .end(err => {
         if (err) return done(err);
-        done();
+        return done();
       });
   });
 });

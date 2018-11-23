@@ -13,7 +13,8 @@ const { makeToken } = require('../../services/token/token');
  * @param {*} params
  */
 function cleanDB() {
-  beforeEach(done => {
+  beforeEach(function(done) {
+    this.timeout(10000);
     refreshDB()
       .then(() => {
         done();
@@ -28,8 +29,7 @@ const invalidToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YmQzOGEyY2M1ZmU2NzNiMWE0ZDkyMDEiLCJ1c2VybmFtZSI6InVzZXJUd28iLCJpYXQiOjE1NDA2ODQ4NzMsImV4cCI6MTU0MDY4ODQ3M30.7fe4dBigiP1hl8W31jsH8Z31eyefbUZkyWRBoI8pl3E';
 
 describe('COMMENT TEST: /api/v1/comments', function() {
-  this.timeout(5000);
-
+  this.timeout(10000);
   cleanDB();
 
   describe('GET /user/*?', function() {
@@ -37,13 +37,11 @@ describe('COMMENT TEST: /api/v1/comments', function() {
 
     it('#should return 3 comments for user', function(done) {
       this.timeout(10000);
-      addSomeCommentsToPost();
       User.findOne({
         'posts.0': { $exists: true }
       })
-        .populate({ path: 'posts', select: 'id' })
+        .populate({ path: 'posts', select: 'id comments' })
         .then(user => {
-          addSomeCommentsToPost(user.posts[0], user, 2);
           if (!user) return done('No hay usuarios con mas de 3 comentarios, agregarlos');
 
           const token = makeToken(user);
@@ -72,9 +70,8 @@ describe('COMMENT TEST: /api/v1/comments', function() {
       User.findOne({
         'posts.0': { $exists: true }
       })
-        .populate({ path: 'posts', select: 'id' })
+        .populate({ path: 'posts', select: 'id comments' })
         .then(user => {
-          addSomeCommentsToPost(user.posts[0], user, 15);
           if (!user) return done('No hay usuarios con mas de 10 comentarios, agregarlos');
 
           const token = makeToken(user);
@@ -114,7 +111,7 @@ describe('COMMENT TEST: /api/v1/comments', function() {
         .end(err => {
           if (err) return done(err);
 
-          done();
+          return done();
         });
     });
   });
@@ -125,68 +122,68 @@ describe('COMMENT TEST: /api/v1/comments', function() {
     it('#should return 3 post comments', function(done) {
       this.timeout(10000);
 
-      Promise.all([
-        Post.findOne({
-          'comments.3': { $exists: true }
-        }),
-        User.findOne()
-      ])
-        .then(resp => {
-          const [post, user] = resp;
+      Post.findOne({
+        'comments.0': { $exists: true }
+      })
+        .populate({ path: 'comments', select: 'id' })
+        .populate({ path: 'user', select: 'id username' })
+        .exec()
+        .then(post => {
+          addSomeCommentsToPost(post, post.user, 2)
+            .then(() => {
+              const token = makeToken(post.user);
+              request(app)
+                .get(`/api/v1/comments/${post.id}/?amount=3`)
+                .set('Authorization', `Bearer ${token}`)
+                .expect(res => {
+                  console.log(post.comments.length);
+                  expect(res.body).toHaveProperty('comments');
+                  expect(res.body.comments.length).toBe(3);
+                  res.body.comments.forEach(comment => {
+                    expect(comment).toHaveProperty('message');
+                  });
+                })
+                .end(err => {
+                  if (err) return done(err);
 
-          if (!post) return done('No hay posts con mas de 3 comentarios, agregarlos');
-
-          const token = makeToken(user);
-
-          request(app)
-            .get(`/api/v1/comments/${post.id}/?amount=3`)
-            .set('Authorization', `Bearer ${token}`)
-            .expect(res => {
-              expect(res.body).toHaveProperty('comments');
-              expect(res.body.comments.length).toBe(3);
-              res.body.comments.forEach(comment => {
-                expect(comment).toHaveProperty('message');
-              });
+                  return done();
+                });
             })
-            .end(err => {
-              if (err) return done(err);
-
-              return done();
-            });
+            .catch(e => done(e));
         })
         .catch(e => done(e));
     });
     it('#should return default amount (10) post comments', function(done) {
       this.timeout(10000);
 
-      Promise.all([
-        Post.findOne({
-          'comments.9': { $exists: true }
-        }),
-        User.findOne()
-      ])
-        .then(resp => {
-          const [post, user] = resp;
+      Post.findOne({
+        'comments.0': { $exists: true }
+      })
+        .populate({ path: 'comments', select: 'id' })
+        .populate({ path: 'user', select: 'id username' })
+        .exec()
+        .then(post => {
+          addSomeCommentsToPost(post, post.user, 14)
+            .then(() => {
+              const token = makeToken(post.user);
 
-          if (!post) return done('No hay posts con mas de 10 comentarios, agregarlos');
+              request(app)
+                .get(`/api/v1/comments/${post.id}/`)
+                .set('Authorization', `Bearer ${token}`)
+                .expect(res => {
+                  expect(res.body).toHaveProperty('comments');
+                  expect(res.body.comments.length).toBe(10);
+                  res.body.comments.forEach(comment => {
+                    expect(comment).toHaveProperty('message');
+                  });
+                })
+                .end(err => {
+                  if (err) return done(err);
 
-          const token = makeToken(user);
-
-          request(app)
-            .get(`/api/v1/comments/${post.id}/`)
-            .set('Authorization', `Bearer ${token}`)
-            .expect(res => {
-              expect(res.body).toHaveProperty('comments');
-              expect(res.body.comments.length).toBe(10);
-              res.body.comments.forEach(comment => {
-                expect(comment).toHaveProperty('message');
-              });
+                  return done();
+                });
             })
-            .end(err => {
-              if (err) return done(err);
-
-              return done();
-            });
+            .catch(e => done(e));
         })
         .catch(e => done(e));
     });

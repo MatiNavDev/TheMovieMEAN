@@ -45,7 +45,7 @@ export class SessionStorageService {
   removeTokens(){
     this.storageSrvc.removeFromStorage(this.TOKEN_KEY);
     this.storageSrvc.removeFromStorage(this.DECODED_TOKEN_KEY);
-}
+    }
 
 
 }

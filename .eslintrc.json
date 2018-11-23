@@ -11,7 +11,8 @@
     "no-underscore-dangle": "off",
     "no-param-reassign": "off",
     "global-require": "off",
-    "no-plusplus": "off"
+    "no-plusplus": "off",
+    "no-useless-escape": "off"
   },
   "env": {
     "node": true,
