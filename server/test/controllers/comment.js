@@ -283,17 +283,91 @@ describe('COMMENT TEST: /api/v1/comments', function() {
         .catch(e => done(e));
     });
 
-    it('#should throw 404 with verification errors (wrong user)', function(done) {
+    it('#should throw 403 with verification errors (wrong user)', function(done) {
       this.timeout(10000);
-      done();
+      Promise.all([
+        User.findOne({ 'posts.0': { $exists: false } }),
+        User.findOne({ 'posts.0': { $exists: true } }).populate({
+          path: 'posts',
+          select: 'comments',
+          populate: {
+            path: 'comments',
+            select: 'id'
+          }
+        })
+      ])
+        .then(users => {
+          const [userWithoutComments, userWithComments] = users;
+          const token = makeToken(userWithoutComments);
+          request(app)
+            .delete(`/api/v1/comments/${userWithComments.posts[0].comments[0].id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(403)
+            .expect(res => {
+              expect(res.body.errors).toContainEqual({
+                title: 'Error de Permisos !',
+                description: 'El comentario no le pertenece al usuario.'
+              });
+            })
+            .end(err => {
+              if (err) return done(err);
+
+              return done();
+            });
+        })
+        .catch(e => done(e));
     });
-    it('#should throw 404 with verification errors (comment doesnt exist)', function(done) {
+
+    it('#should throw 403 with verification errors (comment doesnt exist)', function(done) {
       this.timeout(10000);
-      done();
+      User.findOne({ 'posts.0': { $exists: true } })
+        .populate({
+          path: 'posts',
+          select: 'comments',
+          populate: {
+            path: 'comments',
+            select: 'id'
+          }
+        })
+        .then(user => {
+          const token = makeToken(user);
+          request(app)
+            .delete(`/api/v1/comments/12313`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(403)
+            .expect(res => {
+              expect(res.body.errors).toContainEqual({
+                title: 'Error de Permisos !',
+                description: 'El comentario no le pertenece al usuario.'
+              });
+            })
+            .end(err => {
+              if (err) return done(err);
+
+              return done();
+            });
+        })
+        .catch(e => done(e));
     });
+
     it('#should throw 401 with user no authenticated', function(done) {
       this.timeout(10000);
-      done();
+
+      request(app)
+        .delete(`/api/v1/comments/saraza`)
+        .set('Authorization', `Bearer ${invalidToken}`)
+        .expect(401)
+        .expect(res =>
+          expect(res.body.errors).toContainEqual({
+            title: 'No autorizado !',
+            description: 'Token inválido.'
+          })
+        )
+        .end(err => {
+          if (err) return done(err);
+
+          return done();
+        });
     });
   });
 });

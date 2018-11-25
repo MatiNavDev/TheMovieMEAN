@@ -238,7 +238,7 @@ async function deleteComment(req, res) {
       errors: [
         {
           title: 'Error de Permisos !',
-          description: 'El comment no le pertenece al usuario.'
+          description: 'El comentario no le pertenece al usuario.'
         }
       ]
     });

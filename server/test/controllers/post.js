@@ -337,17 +337,87 @@ describe('POST TEST: /api/v1/posts', function() {
       this.timeout(10000);
       done();
     });
-    it('#should throw 404 with verification errors (wrong user)', function(done) {
+    it('#should throw 403 with verification errors (wrong user)', function(done) {
       this.timeout(10000);
-      done();
+      Promise.all([
+        User.findOne({ 'posts.0': { $exists: false } }).exec(),
+        User.findOne({ 'posts.0': { $exists: true } })
+          .populate({
+            path: 'posts',
+            select: 'id',
+            options: {
+              limit: 1
+            }
+          })
+          .exec()
+      ])
+        .then(users => {
+          const [userWithoutPost, userWithPost] = users;
+
+          const token = makeToken(userWithoutPost);
+          const postId = userWithPost.posts[0].id;
+          request(app)
+            .delete(`/api/v1/posts/${postId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(403)
+            .expect(res => {
+              expect(res.body.errors).toContainEqual({
+                title: 'Error de Permisos !',
+                description: 'El post no le pertenece al usuario.'
+              });
+            })
+            .end(err => {
+              if (err) return done(err);
+
+              done();
+            });
+        })
+        .catch(e => done(e));
     });
-    it('#should throw 404 with verification errors (post doesnt exist)', function(done) {
+
+    it('#should throw 403 with verification errors (post doesnt exist)', function(done) {
       this.timeout(10000);
-      done();
+
+      User.findOne()
+        .then(user => {
+          const token = makeToken(user);
+
+          request(app)
+            .delete('/api/v1/posts/falopa')
+            .set('Authorization', `Bearer ${token}`)
+            .expect(403)
+            .expect(res => {
+              expect(res.body.errors).toContainEqual({
+                title: 'Error de Permisos !',
+                description: 'El post no le pertenece al usuario.'
+              });
+            })
+            .end(err => {
+              if (err) return done(err);
+
+              done();
+            });
+        })
+        .catch(e => done(e));
     });
+
     it('#should throw 401 with user no authenticated', function(done) {
       this.timeout(10000);
-      done();
+      request(app)
+        .delete('/api/v1/posts/123123')
+        .set('Authorization', `Bearer ${falsyToken}`)
+        .expect(401)
+        .expect(res => {
+          expect(res.body.errors).toContainEqual({
+            title: 'No autorizado !',
+            description: 'Token inválido.'
+          });
+        })
+        .end(err => {
+          if (err) return done(err);
+
+          return done();
+        });
     });
   });
 });
