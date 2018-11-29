@@ -5,6 +5,7 @@ const { app } = require('../../index');
 const { makeToken } = require('../../services/token/token');
 const User = require('../../model/user');
 const Post = require('../../model/post');
+const Comment = require('../../model/comment');
 const { refreshDB } = require('../../db/testDB-setter');
 
 /**
@@ -333,10 +334,61 @@ describe('POST TEST: /api/v1/posts', function() {
 
   describe('DELETE /:postId', function() {
     this.timeout(10000);
+
     it('#should delete a post, updating user and deleting comments related', function(done) {
       this.timeout(10000);
-      done();
+
+      User.findOne({ 'posts.0': { $exists: true } })
+        .populate({
+          path: 'posts',
+          select: 'id comments',
+          options: {
+            limit: 1
+          },
+          populate: {
+            path: 'comments',
+            select: 'id',
+            populate: {
+              path: 'user',
+              select: 'id'
+            }
+          }
+        })
+        .then(user => {
+          const token = makeToken(user);
+          const [postRelatedToUser] = user.posts;
+          const commentsRelatedToPost = postRelatedToUser.comments;
+          request(app)
+            .delete(`/api/v1/posts/${postRelatedToUser.id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(200)
+            .expect(res => {
+              expect(res.body).toHaveProperty('deletedPost');
+            })
+            .end(err => {
+              if (err) return done(err);
+              const promises = [];
+              promises.push(
+                User.findOne({ posts: postRelatedToUser.id }),
+                Post.findById(postRelatedToUser.id)
+              );
+              commentsRelatedToPost.forEach(comment => {
+                promises.push(User.findOne({ comments: comment.id }));
+                promises.push(Comment.findById(comment.id));
+              });
+
+              Promise.all(promises)
+                .then(responses => {
+                  responses.forEach(resp => {
+                    expect(resp).toBeNull();
+                  });
+                })
+                .catch(e => done(e));
+            });
+        })
+        .catch(e => done(e));
     });
+
     it('#should throw 403 with verification errors (wrong user)', function(done) {
       this.timeout(10000);
       Promise.all([

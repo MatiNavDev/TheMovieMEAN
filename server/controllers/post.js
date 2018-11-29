@@ -204,13 +204,18 @@ async function deletePost(req, res) {
         ]
       });
     }
-    await Comment.deleteMany({ post: postId });
+    const [deletedComments, , respDeletePost] = await Promise.all([
+      Comment.find({ post: postId }),
+      Comment.deleteMany({ post: postId }),
+      Post.findByIdAndDelete(postId)
+    ]);
 
-    const respDeletePost = await Post.findByIdAndDelete(postId);
+    const deletedCommentIds = deletedComments.map(deletedComment => deletedComment.id);
+    // SI ES CON POPULATE MUESTRA 11, SI ES SIN POPULATE MUESTRA 12
 
     const query = { _id: user.id };
     const docUpdateUser = {
-      $pull: { posts: postId }
+      $pull: { posts: postId, comments: { $in: deletedCommentIds } }
     };
 
     await User.updateOne(query, docUpdateUser);
