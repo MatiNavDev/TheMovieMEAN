@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/user');
 const config = require('../config/config');
 const mongooseHelpers = require('../helpers/mongoose');
+const ErrorText = require('../services/text/error');
 
 // /////////////////////// PRIVATE FUNCTIONS /////////////////////////
 
@@ -28,9 +29,9 @@ async function authMiddleware(req, res, next) {
     const token = req.headers.authorization;
 
     if (!token) {
-      return res
-        .status(401)
-        .send({ errors: [{ title: 'No autorizado !', description: 'Token no enviado.' }] });
+      return res.status(401).send({
+        errors: [{ title: ErrorText.NO_AUTHORIZED, description: ErrorText.INVALID_TOKEN }]
+      });
     }
 
     const jwtToken = token.split(' ')[1];
@@ -39,15 +40,15 @@ async function authMiddleware(req, res, next) {
       try {
         userReceived = parseToken(jwtToken);
       } catch (e) {
-        return res
-          .status(401)
-          .send({ errors: [{ title: 'No autorizado !', description: 'Token inválido.' }] });
+        return res.status(401).send({
+          errors: [{ title: ErrorText.NO_AUTHORIZED, description: ErrorText.INVALID_TOKEN }]
+        });
       }
 
       const userFound = await User.findById(userReceived.userId);
       if (!userFound) {
         return res.status(401).send({
-          errors: [{ title: 'No autorizado !', description: 'Por favor, inicie sesión.' }]
+          errors: [{ title: ErrorText.NO_AUTHORIZED, description: ErrorText.INIT_SESSION }]
         });
       }
 
@@ -56,7 +57,7 @@ async function authMiddleware(req, res, next) {
     }
     return res
       .status(401)
-      .send({ errors: [{ title: 'No autorizado !', description: 'Por favor, inicie sesión.' }] });
+      .send({ errors: [{ title: ErrorText.NO_AUTHORIZED, description: ErrorText.INIT_SESSION }] });
   } catch (e) {
     res.status(401).send(mongooseHelpers.normalizeErrors(e.errors));
   }

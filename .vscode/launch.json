@@ -9,7 +9,15 @@
       "request": "launch",
       "name": "Mocha Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["-u", "tdd", "--timeout 10000", "--colors", "${workspaceFolder}/server/test/*/*.js"],
+      "args": [
+        "-u",
+        "tdd",
+        "--timeout",
+        "4000",
+        "--colors",
+        "${workspaceFolder}/server/index.js",
+        "${workspaceFolder}/server/test/*/*.js"
+      ],
       "internalConsoleOptions": "openOnSessionStart",
       "env": {
         "NODE_ENV": "test"

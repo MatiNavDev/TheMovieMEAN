@@ -1,0 +1,14 @@
+input {
+  &.form-control {
+    border-radius: 10px;
+    &:hover,
+    &:focus {
+      border-color: rgb(193, 243, 193);
+    }
+  }
+}
+
+.custom-form {
+  margin: auto;
+  width: 75%;
+}

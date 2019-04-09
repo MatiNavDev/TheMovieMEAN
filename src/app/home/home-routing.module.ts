@@ -8,36 +8,32 @@ const routes: Routes = [
     component: HomeComponent,
     children: [
       {
-        path: '',
-        redirectTo: 'busquedas',
-        pathMatch: 'full'
-      },
-      {
         path: 'busquedas',
-        loadChildren: "../../app/search/search.module#SearchModule"
+        loadChildren: '../../app/search/search.module#SearchModule'
       },
       {
         path: 'usuarios-cerca',
-        loadChildren: "../../app/close-users/close-users.module#CloseUsersModule"
+        loadChildren: '../../app/close-users/close-users.module#CloseUsersModule'
       },
       {
         path: 'foro',
-        loadChildren: "../../app/forum/forum.module#ForumModule"
+        loadChildren: '../../app/forum/forum.module#ForumModule'
       },
       {
         path: 'perfil',
-        loadChildren: "../../app/profile/profile.module#ProfileModule"
+        loadChildren: '../../app/profile/profile.module#ProfileModule'
       },
       {
         path: 'autenticacion',
-        loadChildren: "../../app/auth/auth.module#AuthModule"
+        loadChildren: '../../app/auth/auth.module#AuthModule'
       }
     ]
-  }
+  },
+  { path: '**', component: HomeComponent }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class HomeRoutingModule { }
+export class HomeRoutingModule {}

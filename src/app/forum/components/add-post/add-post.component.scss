@@ -1,0 +1,12 @@
+.vertical-container {
+  display: flex;
+  height: 100vh;
+  .vertical-center {
+    align-self: center;
+  }
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+}

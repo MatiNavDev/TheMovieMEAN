@@ -1,8 +1,11 @@
-const mongooseHelpers = require('../helpers/mongoose');
 const { verifyPostsFromUser } = require('../services/request-helpers/request-helpers');
 const Post = require('../model/post');
 const User = require('../model/user');
 const Comment = require('../model/comment');
+const { sendOkResponse } = require('./helper/responses');
+const { handleError } = require('./helper/error');
+const { makeCommonError } = require('../services/error');
+const ErrorText = require('../services/text/error.js');
 
 // /////// public methods //////////////
 
@@ -13,6 +16,7 @@ const Comment = require('../model/comment');
  * @param {*} res
  */
 async function getPosts(req, res) {
+  // TODO: manejar el traer el post con su respectiva imagen
   try {
     let firstParam = req.params[0];
     if (firstParam) [firstParam] = firstParam.split('/');
@@ -22,9 +26,9 @@ async function getPosts(req, res) {
       .select('createdAt message title _id')
       .limit(amount);
 
-    res.send(posts);
+    return sendOkResponse(posts, res);
   } catch (e) {
-    res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+    return handleError(e, res);
   }
 }
 
@@ -49,9 +53,9 @@ async function getPostsFromUser(req, res) {
       select: 'createdAt message title _id'
     });
 
-    res.send(userPopulated.posts);
+    return sendOkResponse(userPopulated.posts, res);
   } catch (e) {
-    res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+    return handleError(e, res);
   }
 }
 
@@ -67,41 +71,18 @@ async function patchPost(req, res) {
 
   const { title, message } = req.body;
 
-  try {
-    if (!postId) {
-      return res.status(409).send({
-        errors: [
-          {
-            title: 'Id Erroneo',
-            description: 'El id del post debe ser enviado'
-          }
-        ]
-      });
-    }
+  if (!postId) throw makeCommonError(ErrorText.WRONG_ID, ErrorText.WRONG_POST_ID, 409);
 
-    if (!title || !message) {
-      return res.status(422).send({
-        errors: [
-          {
-            title: 'Falta Data !',
-            description: 'Mínimamente el title o el message tienen que ser modificados.'
-          }
-        ]
-      });
-    }
+  try {
+    if (!postId) throw makeCommonError(ErrorText.WRONG_ID, ErrorText.WRONG_POST_ID, 409);
+
+    if (!title || !message)
+      throw makeCommonError(ErrorText.NO_DATA, ErrorText.MIN_SEND_TIT_MSG, 422);
 
     const isVerified = verifyPostsFromUser(postId, user);
 
-    if (!isVerified) {
-      return res.status(403).send({
-        errors: [
-          {
-            title: 'Error de Permisos !',
-            description: 'El post no le pertenece al usuario.'
-          }
-        ]
-      });
-    }
+    if (!isVerified)
+      throw makeCommonError(ErrorText.WRONG_PERMISSIONS, ErrorText.POST_NOT_FROM_USER, 403);
 
     const properties = {
       title,
@@ -112,9 +93,9 @@ async function patchPost(req, res) {
       'message createdAt title'
     );
 
-    return res.send({ post });
+    return sendOkResponse({ post }, res);
   } catch (e) {
-    res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+    return handleError(e, res);
   }
 }
 
@@ -124,28 +105,20 @@ async function patchPost(req, res) {
  * @param {*} res
  */
 async function postNewPost(req, res) {
-  const { title, message } = req.body;
-
-  const { user } = res.locals;
-
-  if (!title || !message) {
-    return res.status(422).send({
-      errors: [
-        {
-          title: 'Falta Data !',
-          description: 'title & message son requeridos.'
-        }
-      ]
-    });
-  }
-
-  const post = new Post({
-    title,
-    message,
-    user
-  });
-
   try {
+    const { title, message } = req.body;
+
+    const { user } = res.locals;
+
+    if (!title || !message)
+      throw makeCommonError(ErrorText.NO_DATA, ErrorText.NO_MESSAGE_TITLE, 422);
+
+    const post = new Post({
+      title,
+      message,
+      user
+    });
+
     await post.save();
 
     const query = {
@@ -167,11 +140,14 @@ async function postNewPost(req, res) {
       createdAt: post.createdAt
     };
 
-    return res.send({
-      post: parsedPost
-    });
+    return sendOkResponse(
+      {
+        post: parsedPost
+      },
+      res
+    );
   } catch (e) {
-    res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+    return handleError(e, res);
   }
 }
 
@@ -194,16 +170,9 @@ async function deletePost(req, res) {
 
     const isVerified = verifyPostsFromUser(postId, user);
 
-    if (!isVerified) {
-      return res.status(403).send({
-        errors: [
-          {
-            title: 'Error de Permisos !',
-            description: 'El post no le pertenece al usuario.'
-          }
-        ]
-      });
-    }
+    if (!isVerified)
+      throw makeCommonError(ErrorText.WRONG_PERMISSIONS, ErrorText.POST_NOT_FROM_USER, 403);
+
     const [deletedComments, , respDeletePost] = await Promise.all([
       Comment.find({ post: postId }),
       Comment.deleteMany({ post: postId }),
@@ -220,9 +189,9 @@ async function deletePost(req, res) {
 
     await User.updateOne(query, docUpdateUser);
 
-    res.send({ deletedPost: respDeletePost });
+    return sendOkResponse({ deletedPost: respDeletePost }, res);
   } catch (e) {
-    res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+    handleError(e, res);
   }
 }
 

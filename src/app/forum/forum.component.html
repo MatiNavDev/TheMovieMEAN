@@ -1,3 +1,7 @@
-<p>
-  forum works!
-</p>
+<!-- Inspirado en 3d juego -->
+<forum-header [params]="forumHeaderParams"></forum-header>
+<paginator [params]="paginatorParams" (onChangePage)="onChangePostPage($event)"></paginator>
+<add-button [params]="addButtonParams" (onAddButtonClick)="onAddButtonClick()"></add-button>
+<posts [posts]="postsToShow"></posts>
+<add-button [params]="addButtonParams" (onAddButtonClick)="onAddButtonClick()"></add-button>
+<paginator [params]="paginatorParams" (onChangePage)="onChangePostPage($event)"></paginator>

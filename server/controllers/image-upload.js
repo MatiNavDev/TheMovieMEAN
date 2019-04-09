@@ -1,23 +1,25 @@
-const upload = require('../services/s3/index').imageUpload;
+const { createUploadObject } = require('../services/s3/index').imageUpload;
 const User = require('../model/user');
+const ErrorText = require('../services/text/error');
+const { makeCommonError } = require('../services/error');
+const { sendOkResponse } = require('./helper/responses');
+const { handleError } = require('./helper/error');
+const { validateImageRequest } = require('../helpers/images/validators');
 
-module.exports.imageUpload = function(req, res) {
-  const singleUpload = upload.single('image');
-  const { user } = res.locals;
+function imageUpload(req, res) {
+  try {
+    validateImageRequest(req.query);
+    const { type } = req.query;
+    const upload = createUploadObject(type);
+    const singleUpload = upload.single('image');
+    const { user } = res.locals;
 
-  singleUpload(req, res, err => {
-    if (err) {
-      return res.status(422).send({
-        errors: [
-          {
-            title: 'Image Upload Error',
-            description: err.message
-          }
-        ]
-      });
-    }
+    // Es necesario pasarle el mismo request y response que se recibio
+    singleUpload(req, res, async err => {
+      if (err) throw makeCommonError(ErrorText.IMG_UPL_ERROR, err.message);
 
-    if (req.file) {
+      if (!req.file) throw makeCommonError(ErrorText.IMG_UPL_ERROR);
+
       const query = { _id: user._id };
       const objToUpdate = {
         $set: {
@@ -28,30 +30,25 @@ module.exports.imageUpload = function(req, res) {
         new: true
       };
 
-      User.findOneAndUpdate(query, objToUpdate, options, (errToUpdate, updatedUser) => {
-        if (errToUpdate)
-          return res.status(422).send({
-            errors: [
-              {
-                title: 'Error al actualizar!',
-                detail: 'No se pudo encontrar el usuario!'
-              }
-            ]
-          });
+      const { email, id, image, username } = await User.findOneAndUpdate(
+        query,
+        objToUpdate,
+        options
+      );
 
-        return res.send({
-          user: updatedUser
-        });
-      });
-    } else {
-      return res.status(422).send({
-        errors: [
-          {
-            title: 'Error',
-            description: 'Algo anduvo mal !!'
-          }
-        ]
-      });
-    }
-  });
+      const userToReturn = { email, id, image, username };
+      return sendOkResponse(
+        {
+          user: userToReturn
+        },
+        res
+      );
+    });
+  } catch (error) {
+    return handleError(error, res);
+  }
+}
+
+module.exports = {
+  imageUpload
 };

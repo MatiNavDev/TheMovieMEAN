@@ -14,6 +14,9 @@ const postSchema = new Schema({
     min: [4, 'Too short, min is 4 characters'],
     max: [4048, 'Too long, max is 4000 characters aprox.']
   },
+  image: {
+    type: String
+  },
   createdAt: {
     type: Date,
     default: Date.now

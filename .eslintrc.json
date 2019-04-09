@@ -12,7 +12,9 @@
     "no-param-reassign": "off",
     "global-require": "off",
     "no-plusplus": "off",
-    "no-useless-escape": "off"
+    "no-useless-escape": "off",
+    "import/no-extraneous-dependencies": "off",
+    "linebreak-style": "off"
   },
   "env": {
     "node": true,

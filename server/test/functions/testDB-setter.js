@@ -10,8 +10,7 @@ const Comment = require('../../model/comment');
  * @param {*} params
  */
 function cleanDB() {
-  beforeEach(function(done) {
-    this.timeout(10000);
+  beforeEach(done => {
     refreshDB()
       .then(() => {
         done();
@@ -22,11 +21,9 @@ function cleanDB() {
   });
 }
 
-describe('TestDB-Setter TEST', function() {
+describe('TestDB-Setter TEST', () => {
   cleanDB();
-  this.timeout(4000);
-  it('should add 15 comments to post and to user', function(done) {
-    this.timeout(4000);
+  it('should add 15 comments to post and to user', done => {
     Promise.all([
       User.findOne({ 'posts.0': { $exists: true } })
         .populate({ path: 'posts', select: 'id comments' })

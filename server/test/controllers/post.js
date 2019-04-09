@@ -7,6 +7,8 @@ const User = require('../../model/user');
 const Post = require('../../model/post');
 const Comment = require('../../model/comment');
 const { refreshDB } = require('../../db/testDB-setter');
+const ErrorText = require('../../services/text/error');
+const { checkIfError, assertNoAuthenticated, assertSomeError } = require('../assertion');
 
 /**
  * Limpia toda la bd
@@ -27,49 +29,25 @@ function cleanDB() {
 const falsyToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YmQzOGEyY2M1ZmU2NzNiMWE0ZDkyMDEiLCJ1c2VybmFtZSI6InVzZXJUd28iLCJpYXQiOjE1NDA2ODQ4NzMsImV4cCI6MTU0MDY4ODQ3M30.7fe4dBigiP1hl8W31jsH8Z31eyefbUZkyWRBoI8pl3E';
 
-describe('POST TEST: /api/v1/posts', function() {
-  this.timeout(4000);
+describe('POST TEST: /api/v1/posts', () => {
   cleanDB();
 
   describe('POST /', () => {
     it('should throw 401 with user no authenticated', done => {
-      request(app)
-        .post('/api/v1/posts')
-        .set('Authorization', `Bearer ${falsyToken}`)
-        .expect(401)
-        .expect(res => {
-          expect(res.body.errors).toContainEqual({
-            title: 'No autorizado !',
-            description: 'Token inválido.'
-          });
-        })
-        .end(err => {
-          if (err) return done(err);
-
-          return done();
-        });
+      assertNoAuthenticated('/api/v1/posts/', falsyToken, done, 'post');
     });
 
     it('should throw 422 with missing data', done => {
       User.findOne()
         .then(user => {
           const token = makeToken(user);
+          const route = '/api/v1/posts';
+          const error = {
+            title: ErrorText.NO_DATA,
+            description: ErrorText.NO_MESSAGE_TITLE
+          };
 
-          request(app)
-            .post('/api/v1/posts')
-            .set('Authorization', `Bearer ${token}`)
-            .expect(422)
-            .expect(res => {
-              expect(res.body.errors).toContainEqual({
-                title: 'Falta Data !',
-                description: 'title & message son requeridos.'
-              });
-            })
-            .end(err => {
-              if (err) return done(err);
-
-              return done();
-            });
+          assertSomeError(route, null, token, done, error, 422, 'post');
         })
         .catch(e => done(e));
     });
@@ -90,19 +68,21 @@ describe('POST TEST: /api/v1/posts', function() {
             .send(post)
             .expect(200)
             .expect(res => {
-              expect(res.body.post).toHaveProperty('title', post.title);
-              expect(res.body.post).toHaveProperty('message', post.message);
-              expect(res.body.post).toHaveProperty('_id');
-              expect(res.body.post).toHaveProperty('createdAt');
+              const { post: postReceived } = res.body.result;
+              expect(postReceived).toHaveProperty('title', post.title);
+              expect(postReceived).toHaveProperty('message', post.message);
+              expect(postReceived).toHaveProperty('_id');
+              expect(postReceived).toHaveProperty('createdAt');
             })
             .end((err, res) => {
               if (err) return done(err);
+              const { post: postFromServer } = res.body.result;
 
-              Post.findById(res.body.post._id)
+              Post.findById(postFromServer._id)
                 .then(foundPost => {
                   expect(foundPost).toBeTruthy();
-                  expect(res.body.post).toHaveProperty('title', post.title);
-                  expect(res.body.post).toHaveProperty('message', post.message);
+                  expect(foundPost).toHaveProperty('title', post.title);
+                  expect(foundPost).toHaveProperty('message', post.message);
 
                   return done();
                 })
@@ -113,12 +93,8 @@ describe('POST TEST: /api/v1/posts', function() {
     });
   });
 
-  describe('PATCH /:id', function() {
-    this.timeout(4000);
-
-    it('should modify a post correctly', function(done) {
-      this.timeout(4000);
-
+  describe('PATCH /:id', () => {
+    it('should modify a post correctly', done => {
       User.findOne({
         'posts.0': {
           $exists: true
@@ -139,24 +115,21 @@ describe('POST TEST: /api/v1/posts', function() {
             .send(params)
             .expect(200)
             .expect(res => {
-              expect(res.body.post).toMatchObject(params);
-              Post.findById(res.body.post._id)
+              const { post } = res.body.result;
+              expect(post).toMatchObject(params);
+              Post.findById(post._id)
                 .then(foundPost => {
                   expect(foundPost).toBeTruthy();
                   expect(foundPost).toMatchObject(params);
                 })
                 .catch(e => done(e));
             })
-            .end(err => {
-              if (err) return done(err);
-              return done();
-            });
+            .end(err => checkIfError(err, done));
         })
         .catch(e => done(e));
     });
 
-    it('should throw 403 with permission error', function(done) {
-      this.timeout(4000);
+    it('should throw 403 with permission error', done => {
       User.find({})
         .populate('posts', '_id')
         .then(users => {
@@ -168,27 +141,17 @@ describe('POST TEST: /api/v1/posts', function() {
             message: 'Patch Test Message'
           };
 
-          request(app)
-            .patch(`/api/v1/posts/${userWithPost.posts[0].id}`)
-            .set('Authorization', `Bearer ${tokenFromOtherUser}`)
-            .send(params)
-            .expect(403)
-            .expect(res => {
-              expect(res.body.errors).toContainEqual({
-                title: 'Error de Permisos !',
-                description: 'El post no le pertenece al usuario.'
-              });
-            })
-            .end(err => {
-              if (err) return done(err);
-              return done();
-            });
+          const route = `/api/v1/posts/${userWithPost.posts[0].id}`;
+          const error = {
+            title: ErrorText.WRONG_PERMISSIONS,
+            description: ErrorText.POST_NOT_FROM_USER
+          };
+
+          assertSomeError(route, params, tokenFromOtherUser, done, error, 403, 'patch');
         });
     });
 
-    it('should throw 403 with wrong id', function(done) {
-      this.timeout(4000);
-
+    it('should throw 403 with wrong id', done => {
       User.findOne()
         .then(user => {
           const token = makeToken(user);
@@ -196,29 +159,18 @@ describe('POST TEST: /api/v1/posts', function() {
             title: 'Patch Test Title',
             message: 'Patch Test Message'
           };
+          const route = '/api/v1/posts/41224d776a326fb40f000001';
+          const error = {
+            description: ErrorText.POST_NOT_FROM_USER,
+            title: ErrorText.WRONG_PERMISSIONS
+          };
 
-          request(app)
-            .patch('/api/v1/posts/41224d776a326fb40f000001')
-            .set('Authorization', `Bearer ${token}`)
-            .send(params)
-            .expect(403)
-            .expect(res => {
-              expect(res.body.errors).toContainEqual({
-                description: 'El post no le pertenece al usuario.',
-                title: 'Error de Permisos !'
-              });
-            })
-            .end(err => {
-              if (err) return done(err);
-
-              done();
-            });
+          assertSomeError(route, params, token, done, error, 403, 'patch');
         })
         .catch(e => done(e));
     });
 
-    it('should throw 422 with missing data', function(done) {
-      this.timeout(4000);
+    it('should throw 422 with missing data', done => {
       User.findOne({
         'posts.0': {
           $exists: true
@@ -230,30 +182,20 @@ describe('POST TEST: /api/v1/posts', function() {
           const params = {
             title: 'Patch Test Title'
           };
+          const route = `/api/v1/posts/${user.posts[0].id}`;
+          const error = {
+            title: ErrorText.NO_DATA,
+            description: ErrorText.MIN_SEND_TIT_MSG
+          };
 
-          request(app)
-            .patch(`/api/v1/posts/${user.posts[0].id}`)
-            .set('Authorization', `Bearer ${token}`)
-            .send(params)
-            .expect(422)
-            .expect(res => {
-              expect(res.body.errors).toContainEqual({
-                title: 'Falta Data !',
-                description: 'Mínimamente el title o el message tienen que ser modificados.'
-              });
-            })
-            .end(err => {
-              if (err) return done(err);
-              done();
-            });
+          assertSomeError(route, params, token, done, error, 422, 'patch');
         })
         .catch(e => done(e));
     });
   });
 
   describe('GET /', () => {
-    it('should get 1 posts', function(done) {
-      this.timeout(4000);
+    it('should get 1 posts', done => {
       User.findOne()
         .then(user => {
           const token = makeToken(user);
@@ -263,25 +205,21 @@ describe('POST TEST: /api/v1/posts', function() {
             .set('Authorization', `Bearer ${token}`)
             .expect(200)
             .expect(res => {
-              expect(res.body.length).toBe(1);
-              res.body.forEach(post => {
+              const resp = res.body.result;
+              expect(resp.length).toBe(1);
+              resp.forEach(post => {
                 expect(post).toHaveProperty('_id');
                 expect(post).toHaveProperty('title');
                 expect(post).toHaveProperty('message');
                 expect(post).toHaveProperty('createdAt');
               });
             })
-            .end(err => {
-              if (err) return done(err);
-
-              done();
-            });
+            .end(err => checkIfError(err, done));
         })
         .catch(e => done(e));
     });
 
-    it('should get all posts or 10 like max', function(done) {
-      this.timeout(4000);
+    it('should get all posts or 10 like max', done => {
       Promise.all([User.findOne(), Post.find()])
         .then(resp => {
           const [user, posts] = resp;
@@ -292,52 +230,31 @@ describe('POST TEST: /api/v1/posts', function() {
             .set('Authorization', `Bearer ${token}`)
             .expect(200)
             .expect(res => {
+              const response = res.body.result;
               if (posts.length > 10) {
-                expect(res.body.length).toBe(10);
+                expect(response.length).toBe(10);
               } else {
-                expect(res.body.length).toBe(posts.length);
+                expect(response.length).toBe(posts.length);
               }
-              res.body.forEach(post => {
+              response.forEach(post => {
                 expect(post).toHaveProperty('_id');
                 expect(post).toHaveProperty('title');
                 expect(post).toHaveProperty('message');
                 expect(post).toHaveProperty('createdAt');
               });
             })
-            .end(err => {
-              if (err) return done(err);
-
-              done();
-            });
+            .end(err => checkIfError(err, done));
         })
         .catch(e => done(e));
     });
 
     it('should throw 401 with user no authenticated', done => {
-      request(app)
-        .get('/api/v1/posts')
-        .set('Authorization', `Bearer ${falsyToken}`)
-        .expect(401)
-        .expect(res => {
-          expect(res.body.errors).toContainEqual({
-            title: 'No autorizado !',
-            description: 'Token inválido.'
-          });
-        })
-        .end(err => {
-          if (err) return done(err);
-
-          return done();
-        });
+      assertNoAuthenticated('/api/v1/posts', falsyToken, done, 'get');
     });
   });
 
-  describe('DELETE /:postId', function() {
-    this.timeout(10000);
-
-    it('#should delete a post, updating user and deleting comments related', function(done) {
-      this.timeout(10000);
-
+  describe('DELETE /:postId', () => {
+    it('#should delete a post, updating user and deleting comments related', done => {
       User.findOne({ 'posts.0': { $exists: true } })
         .populate({
           path: 'posts',
@@ -363,10 +280,7 @@ describe('POST TEST: /api/v1/posts', function() {
             .set('Authorization', `Bearer ${token}`)
             .expect(200)
             .expect(res => {
-              expect(res.body).toHaveProperty('deletedPost');
-            })
-            .end(err => {
-              if (err) return done(err);
+              expect(res.body.result).toHaveProperty('deletedPost');
               const promises = [];
               promises.push(
                 User.findOne({ posts: postRelatedToUser.id }),
@@ -384,13 +298,13 @@ describe('POST TEST: /api/v1/posts', function() {
                   });
                 })
                 .catch(e => done(e));
-            });
+            })
+            .end(err => checkIfError(err, done));
         })
         .catch(e => done(e));
     });
 
-    it('#should throw 403 with verification errors (wrong user)', function(done) {
-      this.timeout(10000);
+    it('#should throw 403 with verification errors (wrong user)', done => {
       Promise.all([
         User.findOne({ 'posts.0': { $exists: false } }).exec(),
         User.findOne({ 'posts.0': { $exists: true } })
@@ -408,68 +322,35 @@ describe('POST TEST: /api/v1/posts', function() {
 
           const token = makeToken(userWithoutPost);
           const postId = userWithPost.posts[0].id;
-          request(app)
-            .delete(`/api/v1/posts/${postId}`)
-            .set('Authorization', `Bearer ${token}`)
-            .expect(403)
-            .expect(res => {
-              expect(res.body.errors).toContainEqual({
-                title: 'Error de Permisos !',
-                description: 'El post no le pertenece al usuario.'
-              });
-            })
-            .end(err => {
-              if (err) return done(err);
+          const route = `/api/v1/posts/${postId}`;
+          const error = {
+            title: ErrorText.WRONG_PERMISSIONS,
+            description: ErrorText.POST_NOT_FROM_USER
+          };
 
-              done();
-            });
+          assertSomeError(route, null, token, done, error, 403, 'delete');
         })
         .catch(e => done(e));
     });
 
-    it('#should throw 403 with verification errors (post doesnt exist)', function(done) {
-      this.timeout(10000);
-
+    it('#should throw 403 with verification errors (post doesnt exist)', done => {
       User.findOne()
         .then(user => {
           const token = makeToken(user);
 
-          request(app)
-            .delete('/api/v1/posts/falopa')
-            .set('Authorization', `Bearer ${token}`)
-            .expect(403)
-            .expect(res => {
-              expect(res.body.errors).toContainEqual({
-                title: 'Error de Permisos !',
-                description: 'El post no le pertenece al usuario.'
-              });
-            })
-            .end(err => {
-              if (err) return done(err);
+          const route = '/api/v1/posts/falopa';
+          const error = {
+            title: ErrorText.WRONG_PERMISSIONS,
+            description: ErrorText.POST_NOT_FROM_USER
+          };
 
-              done();
-            });
+          assertSomeError(route, null, token, done, error, 403, 'delete');
         })
         .catch(e => done(e));
     });
 
-    it('#should throw 401 with user no authenticated', function(done) {
-      this.timeout(10000);
-      request(app)
-        .delete('/api/v1/posts/123123')
-        .set('Authorization', `Bearer ${falsyToken}`)
-        .expect(401)
-        .expect(res => {
-          expect(res.body.errors).toContainEqual({
-            title: 'No autorizado !',
-            description: 'Token inválido.'
-          });
-        })
-        .end(err => {
-          if (err) return done(err);
-
-          return done();
-        });
+    it('#should throw 401 with user no authenticated', done => {
+      assertNoAuthenticated('/api/v1/posts/123123', falsyToken, done, 'delete');
     });
   });
 });

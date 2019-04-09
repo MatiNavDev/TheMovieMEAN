@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const config = require('./../config/config');
+const { isTest } = require('../services/enviroment');
 // const { refreshDB } = require('../db/testDB-setter');
 
 /**
@@ -16,14 +17,14 @@ function configMongoose() {
 
 // ///// PUBLIC FUNCTIONS ///////
 
+/**
+ * Se conecta a la base de datos
+ */
 function connectToDB() {
   mongoose
-    .connect(
-      config.DB_URL,
-      {
-        useNewUrlParser: true
-      }
-    )
+    .connect(config.DB_URL, {
+      useNewUrlParser: true
+    })
     .then(() => {
       console.log(`mongoose connected to: ${config.DB_URL}`);
       // refreshDB();
@@ -31,6 +32,27 @@ function connectToDB() {
     });
 }
 
+/**
+ * Se conecta a la base de datos corriendo la app en modo test
+ */
+function connectToDBTestMode() {
+  if (!isTest()) throw new Error('Se ejecuto connectToDBTestMode, sin estar en modo test');
+
+  before(done => {
+    mongoose
+      .connect(config.DB_URL, {
+        useNewUrlParser: true
+      })
+      .then(() => {
+        console.log(`mongoose connected to: ${config.DB_URL}`);
+        // refreshDB();
+        configMongoose();
+        done();
+      });
+  });
+}
+
 module.exports = {
-  connectToDB
+  connectToDB,
+  connectToDBTestMode
 };

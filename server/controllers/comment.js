@@ -1,8 +1,11 @@
-const mongooseHelpers = require('../helpers/mongoose');
 const Post = require('../model/post');
 const User = require('../model/user');
 const Comment = require('../model/comment');
 const { verifyCommentFromUser } = require('../services/request-helpers/request-helpers');
+const { sendOkResponse } = require('./helper/responses');
+const ErrorText = require('../services/text/error.js');
+const { handleError } = require('./helper/error');
+const { makeCommonError } = require('../services/error');
 
 // /////// PUBLIC FUNCTIONS //////////////
 
@@ -18,15 +21,7 @@ async function getCommentsFromPost(req, res) {
     let { amount } = req.query;
     amount = parseInt(amount || 10, 10);
 
-    if (!postId)
-      return res.status(400).send({
-        errors: [
-          {
-            title: 'Id Erroneo',
-            description: 'El id no corresponde a ningún post'
-          }
-        ]
-      });
+    if (!postId) throw makeCommonError(ErrorText.WRONG_ID, ErrorText.WRONG_POST_ID, 400);
 
     const foundPost = await Post.findById(postId).populate({
       path: 'comments',
@@ -36,19 +31,11 @@ async function getCommentsFromPost(req, res) {
       }
     });
 
-    if (!foundPost)
-      return res.status(400).send({
-        errors: [
-          {
-            title: 'Id Erroneo',
-            description: 'El id no corresponde a ningún post'
-          }
-        ]
-      });
+    if (!foundPost) throw makeCommonError(ErrorText.WRONG_ID, ErrorText.WRONG_POST_ID, 400);
 
-    return res.send({ comments: foundPost.comments });
+    return sendOkResponse({ comments: foundPost.comments }, res);
   } catch (e) {
-    return res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+    return handleError(e, res);
   }
 }
 
@@ -71,9 +58,9 @@ async function getCommentsFromUser(req, res) {
       }
     });
 
-    return res.send({ comments: foundUser.comments });
+    return sendOkResponse({ comments: foundUser.comments }, res);
   } catch (e) {
-    return res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+    return handleError(e, res);
   }
 }
 
@@ -92,38 +79,14 @@ async function patchComment(req, res) {
     const { message } = req.body;
     const { user } = res.locals;
 
-    if (!commentId)
-      return res.status(400).send({
-        errors: [
-          {
-            title: 'Id Erroneo',
-            description: 'El id del comentario debe ser enviado'
-          }
-        ]
-      });
+    if (!commentId) throw makeCommonError(ErrorText.WRONG_ID, ErrorText.NO_COMMENT_ID, 400);
 
-    if (!message)
-      return res.status(422).send({
-        errors: [
-          {
-            title: 'Falta Data !',
-            description: 'Mínimamente el message tiene que ser modificado.'
-          }
-        ]
-      });
+    if (!message) throw makeCommonError(ErrorText.NO_DATA, ErrorText.MIN_SEND_MSG, 422);
 
     const isVerified = verifyCommentFromUser(commentId, user);
 
-    if (!isVerified) {
-      return res.status(403).send({
-        errors: [
-          {
-            title: 'Error de Permisos !',
-            description: 'El comment no le pertenece al usuario.'
-          }
-        ]
-      });
-    }
+    if (!isVerified)
+      throw makeCommonError(ErrorText.WRONG_PERMISSIONS, ErrorText.COMMENT_NOT_FROM_USER, 403);
 
     const properties = {
       message
@@ -132,13 +95,11 @@ async function patchComment(req, res) {
       commentId,
       { $set: properties },
       { fields: { id: 1, message: 1, createdAt: 1 } }
-    )
-      .select('message createdAt')
-      .exec();
+    ).select('message createdAt');
 
-    return res.send({ comment });
+    return sendOkResponse({ comment }, res);
   } catch (e) {
-    res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+    return handleError(e, res);
   }
 }
 
@@ -158,27 +119,11 @@ async function postNewComment(req, res) {
     const { postId } = req.params;
     const { user } = res.locals;
 
-    if (!message)
-      return res.status(422).send({
-        errors: [
-          {
-            title: 'Falta Data !',
-            description: 'El campo message es requerido.'
-          }
-        ]
-      });
+    if (!message) throw makeCommonError(ErrorText.NO_DATA, ErrorText.NO_MESSAGE, 422);
 
     const post = await Post.findById(postId);
 
-    if (!post)
-      return res.status(409).send({
-        errors: [
-          {
-            title: 'Id Erroneo',
-            description: 'El id no corresponde a ningún post'
-          }
-        ]
-      });
+    if (!post) throw makeCommonError(ErrorText.WRONG_ID, ErrorText.WRONG_POST_ID, 400);
 
     const comment = new Comment({
       message,
@@ -209,9 +154,9 @@ async function postNewComment(req, res) {
       createdAt: comment.createdAt
     };
 
-    return res.send({ comment: commentParsed });
+    return sendOkResponse({ comment: commentParsed }, res);
   } catch (e) {
-    return res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+    return handleError(e, res);
   }
 }
 
@@ -228,34 +173,30 @@ async function deleteComment(req, res) {
    * Elimina el comentario de la lista de comentarios del usuario
    */
 
-  const { commentId } = req.params;
-  const { user } = res.locals;
+  try {
+    const { commentId } = req.params;
+    const { user } = res.locals;
 
-  const isVerified = verifyCommentFromUser(commentId, user);
+    const isVerified = verifyCommentFromUser(commentId, user);
 
-  if (!isVerified) {
-    return res.status(403).send({
-      errors: [
-        {
-          title: 'Error de Permisos !',
-          description: 'El comentario no le pertenece al usuario.'
-        }
-      ]
-    });
+    if (!isVerified)
+      throw makeCommonError(ErrorText.WRONG_PERMISSIONS, ErrorText.COMMENT_NOT_FROM_USER, 403);
+
+    const respDeletedComment = await Comment.findByIdAndDelete(commentId);
+
+    const queryPost = { comments: commentId };
+    const docUpdatePost = { $pull: { comments: commentId } };
+
+    await Post.updateOne(queryPost, docUpdatePost);
+
+    const queryUser = { _id: user.id };
+    const docUpdateUser = { $pull: { comments: commentId } };
+    await User.updateOne(queryUser, docUpdateUser);
+
+    return sendOkResponse({ deletedComment: respDeletedComment }, res);
+  } catch (e) {
+    return handleError(e, res);
   }
-
-  const respDeletedComment = await Comment.findByIdAndDelete(commentId);
-
-  const queryPost = { comments: commentId };
-  const docUpdatePost = { $pull: { comments: commentId } };
-
-  await Post.updateOne(queryPost, docUpdatePost);
-
-  const queryUser = { _id: user.id };
-  const docUpdateUser = { $pull: { comments: commentId } };
-  await User.updateOne(queryUser, docUpdateUser);
-
-  res.send({ deletedComment: respDeletedComment });
 }
 
 module.exports = {

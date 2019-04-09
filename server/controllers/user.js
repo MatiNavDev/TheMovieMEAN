@@ -1,6 +1,9 @@
 const User = require('../model/user.js');
-const mongooseHelpers = require('../helpers/mongoose');
 const tokenSrvc = require('../services/token/token');
+const { sendOkResponse } = require('./helper/responses');
+const { handleError } = require('./helper/error');
+const { makeCommonError } = require('../services/error');
+const ErrorText = require('../services/text/error.js');
 
 // /////////////////////// PUBLIC FUNCTIONS /////////////////////////
 
@@ -10,60 +13,34 @@ const tokenSrvc = require('../services/token/token');
  * @param {*} req
  * @param {*} res
  */
-function login(req, res) {
-  const { email, password } = req.body;
+async function login(req, res) {
+  // TODO: manejar traer al usuario con su respectiva imagen
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(422).send({
-      errors: [
-        {
-          title: 'Falta Data !',
-          description: 'El Email y la Contraseña son requeridos.'
-        }
-      ]
-    });
-  }
+    if (!email || !password) throw makeCommonError(ErrorText.NO_DATA, ErrorText.NO_USER_PASS, 422);
 
-  User.findOne(
-    {
-      email
-    },
-    (err, user) => {
-      // Si hay error
-      if (err) {
-        return res.status(422).send(mongooseHelpers.normalizeErrors(err.errors));
-      }
+    const user = await User.findOne({ email });
 
-      // Si no esta el usuario
-      if (!user) {
-        return res.status(422).send({
-          errors: [
-            {
-              title: 'Error !',
-              description: 'Usuario no encontrado.'
-            }
-          ]
-        });
-      }
-      // Checkeo contraseñas
-      if (user.hasSamePassword(password)) {
-        const token = tokenSrvc.makeToken(user);
-
-        return res.json({
-          token,
-          user
-        });
-      }
-      return res.status(422).send({
-        errors: [
-          {
-            title: 'Usuario y Contraseña invalidos !',
-            description: 'El Usuario o la Contraseña no existen.'
-          }
-        ]
-      });
+    if (!user) {
+      throw makeCommonError(ErrorText.WRONG_USER_PASS, ErrorText.NO_EXISTS_USER_PASS, 422);
     }
-  );
+    // Checkeo contraseñas
+    if (!user.hasSamePassword(password))
+      throw makeCommonError(ErrorText.WRONG_USER_PASS, ErrorText.NO_EXISTS_USER_PASS, 422);
+
+    const token = tokenSrvc.makeToken(user);
+
+    sendOkResponse(
+      {
+        token,
+        user
+      },
+      res
+    );
+  } catch (e) {
+    handleError(e, res);
+  }
 }
 
 /**
@@ -76,42 +53,17 @@ async function register(req, res) {
   try {
     const { password, email, username, confirmPassword } = req.body;
 
-    if (!password || !confirmPassword || !username || !email) {
-      return res.status(422).send({
-        errors: [
-          {
-            title: 'Campos no enviados!',
-            description: 'Usuario, Contraseña, Confirmacion Contraseña y Email son requeridos.'
-          }
-        ]
-      });
-    }
+    if (!password || !confirmPassword || !username || !email)
+      throw makeCommonError(ErrorText.NO_DATA, ErrorText.NO_REGISTER_FIELDS, 422);
 
-    if (password !== confirmPassword) {
-      return res.status(422).send({
-        errors: [
-          {
-            title: 'Error con Contraseñas!',
-            description: 'Las Contraseñas no coinciden.'
-          }
-        ]
-      });
-    }
+    if (password !== confirmPassword)
+      throw makeCommonError(ErrorText.PASS_ERROR, ErrorText.WRONG_CONFIRMATION_PASS, 422);
 
     const userFound = await User.findOne({
       email
     });
 
-    if (userFound) {
-      return res.status(422).send({
-        errors: [
-          {
-            title: 'Error con Email!',
-            description: 'Email duplicado.'
-          }
-        ]
-      });
-    }
+    if (userFound) throw makeCommonError(ErrorText.EMAIL_ERROR, ErrorText.DUPLICATED_EMAIL, 422);
 
     const user = new User({
       username,
@@ -129,12 +81,15 @@ async function register(req, res) {
       image: user.image
     };
 
-    return res.send({
-      user: parsedUser,
-      token
-    });
+    return sendOkResponse(
+      {
+        user: parsedUser,
+        token
+      },
+      res
+    );
   } catch (e) {
-    return res.status(422).send(mongooseHelpers.normalizeErrors(e.errors));
+    return handleError(e, res);
   }
 }
 

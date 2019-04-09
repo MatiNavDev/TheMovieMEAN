@@ -1,35 +1,38 @@
-input{
-    border-radius: 7px;
-    width: 80%;
+input {
+  border-radius: 7px;
+  width: 80%;
 }
 
 .form-control:focus {
-    border-color: #66afe9;
-    outline: 0;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+  border-color: #66afe9;
+  outline: 0;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
 }
 
-.custom-form{
-    margin-top: 10rem;
-}
-
-.with-margin{
-    margin-top: 20rem;    
+.login-container {
+  position: relative;
+  height: 566px;
+  .centrado-vert {
+    position: absolute;
+    top: 25%;
+    width: 100%;
+  }
 }
 
 .custom-wrapper {
-    text-align: center;
+  text-align: center;
   .img-wrappered {
     display: inline-block;
   }
 }
 
-p{
-    &.image-header{
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-    font-size: xx-large;
-    font-weight: bolder;
-    }
+.img-container {
+  background-image: url('https://www.themoviedb.org/assets/1/v4/logos/312x276-primary-blue-fb50dee3bf664c866fd216e6cee64af33d20707ea3091ddc65c5e8aa4c152eb2.png');
+  height: 200px;
+  width: 200px;
+  background-size: contain; /*rehace el tamanio para que entre*/
+  background-position: center top; /*centra la imagen*/
+  background-repeat: no-repeat;
+  margin: auto;
 }

@@ -6,9 +6,14 @@ const userRoutes = require('./routes/user');
 const postRoutes = require('./routes/post');
 const commentRoutes = require('./routes/comment');
 const imageUploadRoutes = require('./routes/image-upload');
-const DB = require('./db/mongooseDB');
+const { connectToDB, connectToDBTestMode } = require('./db/mongooseDB');
+const { isTest } = require('./services/enviroment');
 
-DB.connectToDB();
+if (isTest()) {
+  connectToDBTestMode();
+} else {
+  connectToDB();
+}
 
 const app = express();
 
@@ -30,7 +35,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.resolve(appPath, 'index.html'));
 });
 
-// Establece el puerto 3001 o el del entorno
+// Establece el puerto 3003 o el del entorno
 const PORT = process.env.PORT || 3003;
 
 app.listen(PORT, () => console.log(`I am running in port: ${PORT}`));

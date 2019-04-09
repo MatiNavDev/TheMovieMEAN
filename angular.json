@@ -126,7 +126,7 @@
       }
     },
     "TheMovieMEAN-e2e": {
-      "root": "e2e/",
+      "root": "e2e",
       "projectType": "application",
       "architect": {
         "e2e": {

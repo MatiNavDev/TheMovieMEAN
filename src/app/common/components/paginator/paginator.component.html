@@ -1,0 +1,30 @@
+<div *ngIf="params">
+  <span *ngIf="params.actualPage != 1">
+    <button (click)="onChangePage.emit(1)">
+      <<
+    </button>
+  </span>
+  <span *ngIf="params.actualPage != 1">
+    <button (click)="onChangePage.emit(params.actualPage - 1)">
+      <
+    </button>
+  </span>
+  <span *ngFor="let page of pages">
+    <button (click)="onChangePage.emit(page)" [ngClass]="{ active: page === params.actualPage }">
+      {{ page }}
+    </button>
+  </span>
+  <span *ngIf="showNextPages()">
+    <button (click)="onChangePage.emit(params.actualPage + 1)">
+      >
+    </button>
+  </span>
+  <span *ngIf="showNextPages()">
+    <button (click)="onChangePage.emit(params.lastPage)">
+      >>
+    </button>
+  </span>
+</div>
+
+<!-- Pasarle las 5 paginas y que cuando va a una pagina que no esta en el rango ahi le pegue al server -->
+<!-- < << 1 2 3 4 5 >> > // < << 6 7 8 9 10 >> > // y asi.. -->

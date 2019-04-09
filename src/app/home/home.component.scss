@@ -1,0 +1,16 @@
+.customContent {
+  min-height: 250px;
+  display: inline-block;
+  padding: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  width: 100%;
+}
+
+.content-wrapper {
+  transition: 1s background-color ease-in-out;
+}
+
+.content-wrapper:hover {
+  background-color: #eff7ff;
+}
