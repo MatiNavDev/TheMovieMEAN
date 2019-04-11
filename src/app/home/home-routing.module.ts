@@ -28,8 +28,7 @@ const routes: Routes = [
         loadChildren: '../../app/auth/auth.module#AuthModule'
       }
     ]
-  },
-  { path: '**', component: HomeComponent }
+  }
 ];
 
 @NgModule({

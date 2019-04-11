@@ -6,11 +6,6 @@ import { RegisterComponent } from 'src/app/auth/components/register/register.com
 
 const routes: Routes = [
   {
-    path: '',
-    component: LoginComponent,
-    canActivate: [AuthGuard]
-  },
-  {
     path: 'login',
     component: LoginComponent,
     canActivate: [AuthGuard]
@@ -20,10 +15,14 @@ const routes: Routes = [
     component: RegisterComponent,
     canActivate: [AuthGuard]
   },
+  {
+    path: '',
+    redirectTo: 'login'
+  }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class AuthRoutingModule { }
+export class AuthRoutingModule {}

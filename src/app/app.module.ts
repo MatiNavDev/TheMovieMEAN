@@ -15,11 +15,12 @@ import { environment } from '../environments/environment';
   declarations: [AppComponent],
   imports: [
     BrowserModule,
-    AppRoutingModule,
     HttpClientModule,
     ToasterModule.forRoot(),
     Ng4LoadingSpinnerModule.forRoot(),
     BrowserAnimationsModule,
+    AppRoutingModule,
+
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [

@@ -1,3 +1,5 @@
+import { Router } from '@angular/router';
+import { ErrorHandlerService } from './../../../common/services/error-handler.service';
 import { LoadingService } from 'src/app/common/services/loading.service';
 import { FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
@@ -14,7 +16,9 @@ export class AddPostComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private loadingSrvc: LoadingService,
-    private postSrvc: PostService
+    private postSrvc: PostService,
+    private errorSrvc: ErrorHandlerService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -39,6 +43,17 @@ export class AddPostComponent implements OnInit {
    */
   public onAddPost() {
     this.loadingSrvc.show();
-    this.postSrvc.addPost(this.addPostForm.value);
+    this.postSrvc.addPost(this.addPostForm.value).subscribe(
+      () => {
+        debugger;
+        this.loadingSrvc.hide();
+        this.router.navigate(['home/foro']);
+      },
+      error => {
+        debugger;
+        this.loadingSrvc.hide();
+        this.errorSrvc.showErrorsToUser(error);
+      }
+    );
   }
 }

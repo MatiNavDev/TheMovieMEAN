@@ -23,7 +23,7 @@ async function getPosts(req, res) {
     const amount = parseInt(firstParam || 10, 10);
 
     const posts = await Post.find()
-      .select('createdAt message title _id')
+      .select('createdAt message title _id image')
       .limit(amount);
 
     return sendOkResponse(posts, res);
@@ -69,27 +69,28 @@ async function patchPost(req, res) {
 
   const { postId } = req.params;
 
-  const { title, message } = req.body;
+  const { updateObject } = req.body;
 
   if (!postId) throw makeCommonError(ErrorText.WRONG_ID, ErrorText.WRONG_POST_ID, 409);
 
   try {
     if (!postId) throw makeCommonError(ErrorText.WRONG_ID, ErrorText.WRONG_POST_ID, 409);
 
-    if (!title || !message)
-      throw makeCommonError(ErrorText.NO_DATA, ErrorText.MIN_SEND_TIT_MSG, 422);
+    if (!Object.keys(updateObject).length)
+      throw makeCommonError(ErrorText.NO_DATA, ErrorText.NO_DATA, 422);
+
+    // TODO: validar que las variables a patchear se encuentren dentro del array pasado
+    validateVarsToPatch(updateObject, ['title', 'message', 'image']);
+
+    // TODO: valida que las variables, si es que se van a patchear, no sean null
+    validateVarsNotNullIffExists(updateObject, ['title', 'message']);
 
     const isVerified = verifyPostsFromUser(postId, user);
 
     if (!isVerified)
       throw makeCommonError(ErrorText.WRONG_PERMISSIONS, ErrorText.POST_NOT_FROM_USER, 403);
 
-    const properties = {
-      title,
-      message
-    };
-
-    const post = await Post.findByIdAndUpdate(postId, { $set: properties }, { new: true }).select(
+    const post = await Post.findByIdAndUpdate(postId, { $set: updateObject }, { new: true }).select(
       'message createdAt title'
     );
 
@@ -137,6 +138,7 @@ async function postNewPost(req, res) {
       _id: post._id,
       title: post.title,
       message: post.message,
+      image: post.image,
       createdAt: post.createdAt
     };
 

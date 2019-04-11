@@ -7,12 +7,12 @@ import { ForumComponent } from 'src/app/forum/forum.component';
 const routes: Routes = [
   {
     path: 'anadir-post',
-    component: AddPostComponent
+    component: AddPostComponent,
+    canActivate: [AuthGuard]
   },
   {
     path: '',
-    component: ForumComponent,
-    pathMatch: 'full'
+    component: ForumComponent
   },
   { path: '**', component: ForumComponent }
 ];

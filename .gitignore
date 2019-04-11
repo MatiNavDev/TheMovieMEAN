@@ -42,3 +42,5 @@ Thumbs.db
 /server/config/dev.js
 /server/config/test.js
 /server/db/testDB-setter.js
+/src/environments/enviroment.dev.ts
+/src/environments/enviroment.test.ts

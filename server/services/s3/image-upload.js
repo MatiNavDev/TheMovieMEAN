@@ -3,6 +3,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 
 const config = require('../../config/config');
+const { makeNotSupportedBucketError } = require('../../helpers/images/error');
 
 aws.config.update({
   secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
@@ -30,6 +31,11 @@ const fileFilter = function(req, file, cb) {
   }
 };
 
+/**
+ * Crea un objeto el cual subira la imagen a S3. La carpeta se definira por el tipo
+ * de imagen a guardar
+ * @param {'user' | 'post'} type
+ */
 function createUploadObject(type) {
   let bucket;
 
@@ -40,9 +46,8 @@ function createUploadObject(type) {
     case 'post':
       bucket = config.S3_POST_BUCKET;
       break;
-
     default:
-      throw new Error('Bucket not supported');
+      throw makeNotSupportedBucketError();
   }
 
   return multer({

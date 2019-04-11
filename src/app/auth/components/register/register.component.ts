@@ -2,7 +2,7 @@ import { LoadingService } from 'src/app/common/services/loading.service';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { AuthRequestService } from '../../services/auth-request.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ErrorHandlerService } from 'src/app/common/services/error-handler.service';
 
 @Component({
@@ -18,6 +18,7 @@ export class RegisterComponent implements OnInit {
     private formBuilder: FormBuilder,
     private authRequestSrvc: AuthRequestService,
     private router: Router,
+    private route: ActivatedRoute,
     private errorSrvc: ErrorHandlerService,
     private loadingSrvc: LoadingService
   ) {}
@@ -53,7 +54,8 @@ export class RegisterComponent implements OnInit {
     this.authRequestSrvc.userRegister(this.regForm.value).subscribe(
       res => {
         this.loadingSrvc.hide();
-        this.router.navigate(['../busquedas']);
+
+        this.router.navigate(['../../foro'], { relativeTo: this.route });
       },
       errors => {
         this.loadingSrvc.hide();

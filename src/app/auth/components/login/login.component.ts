@@ -45,10 +45,12 @@ export class LoginComponent implements OnInit {
     this.authRequestSrvc.userLogin(this.loginForm.value).subscribe(
       res => {
         this.loadingSrvc.hide();
-        this.router.navigate(['/foro'], { relativeTo: this.route });
+        this.route.parent.url.subscribe(urlPath => {
+          const url = urlPath[urlPath.length - 1].path;
+        });
+        this.router.navigate(['../../foro'], { relativeTo: this.route });
       },
       errors => {
-        this.router.navigate(['../../foro'], { relativeTo: this.route });
         this.loadingSrvc.hide();
         this.errorSrvc.showErrorsToUser(errors);
       }

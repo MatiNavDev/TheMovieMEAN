@@ -30,13 +30,13 @@ export class AuthRequestService {
   ) {}
 
   /**
-   * Maneja una autenticación exitoso
-   * @param user
+   * Maneja un registro o inicio exitoso
+   * @param response
    */
-  private handleSuccessfullAuth(user: any, observer: Subscriber<any>) {
+  private handleSuccessfullLoginOrRegister(response) {
+    const { user, token } = response.result;
+    this.setToken(token);
     this.authStgSrvc.setUser(user);
-    observer.next('ok');
-    observer.complete();
   }
 
   /**
@@ -55,17 +55,15 @@ export class AuthRequestService {
    * @param data
    */
   public userLogin(data): Observable<any> {
-    return new Observable(observer => {
-      this.http.post(environment.url + 'auth/login', data).subscribe(
-        (response: any) => {
-          this.setToken(response.token);
-          this.handleSuccessfullAuth(response.user, observer);
-        },
-        (error: any) => {
-          throw this.errorSrvc.handleUniversalError(error);
-        }
-      );
-    });
+    return this.http.post(environment.url + 'auth/login', data).pipe(
+      switchMap((response: any) => {
+        this.handleSuccessfullLoginOrRegister(response);
+        return of([]);
+      }),
+      catchError(error => {
+        throw this.errorSrvc.handleUniversalError(error);
+      })
+    );
   }
 
   /**
@@ -78,9 +76,7 @@ export class AuthRequestService {
      */
     return this.http.post(environment.url + 'auth/register', data).pipe(
       switchMap((response: any) => {
-        const { user, token } = response.result;
-        this.setToken(token);
-        this.authStgSrvc.setUser(user);
+        this.handleSuccessfullLoginOrRegister(response);
         return of([]);
       }),
       // una vez que el usuario se registro, veo si hay que agregarle la imagen

@@ -1,4 +1,5 @@
 module.exports = {
+  BUCKET_ERROR: 'Este modelo no soporta imagen.',
   ERROR: 'Error',
   IMG_UPL_ERROR: 'Error al actualizar!',
   PASS_ERROR: 'Error con Contraseñas!',
