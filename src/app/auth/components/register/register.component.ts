@@ -55,7 +55,7 @@ export class RegisterComponent implements OnInit {
       res => {
         this.loadingSrvc.hide();
 
-        this.router.navigate(['../../foro'], { relativeTo: this.route });
+        this.router.navigate(['../../busquedas'], { relativeTo: this.route });
       },
       errors => {
         this.loadingSrvc.hide();
