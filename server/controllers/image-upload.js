@@ -44,16 +44,12 @@ function imageUpload(req, res) {
           throw makeNotSupportedBucketError();
       }
 
-      const { email, id, image, username } = await model.findOneAndUpdate(
-        query,
-        objToUpdate,
-        options
-      );
+      const { id, image } = await model.findOneAndUpdate(query, objToUpdate, options);
 
-      const userToReturn = { email, id, image, username };
+      const updatedObject = { id, image };
       return sendOkResponse(
         {
-          user: userToReturn
+          updatedObject
         },
         res
       );

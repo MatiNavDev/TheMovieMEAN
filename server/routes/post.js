@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/user/*?', AuthMiddleware.authMiddleware, PostController.getPostsFromUser);
 
 // Obtiene los posts
-router.get('/*?', AuthMiddleware.authMiddleware, PostController.getPosts);
+router.get('', AuthMiddleware.authMiddleware, PostController.getPosts);
 
 router.patch('/:postId', AuthMiddleware.authMiddleware, PostController.patchPost);
 

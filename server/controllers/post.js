@@ -6,6 +6,8 @@ const { sendOkResponse } = require('./helper/responses');
 const { handleError } = require('./helper/error');
 const { makeCommonError } = require('../services/error');
 const ErrorText = require('../services/text/error.js');
+const { validateGetPosts } = require('../helpers/posts/validator');
+const { decorateGetPosts } = require('../helpers/posts/decorator');
 
 // /////// public methods //////////////
 
@@ -16,17 +18,55 @@ const ErrorText = require('../services/text/error.js');
  * @param {*} res
  */
 async function getPosts(req, res) {
-  // TODO: manejar el traer el post con su respectiva imagen
+  // Se tienen que poder ordenar por mas populares (con mas respuestas), o por mas recientes (fecha descendete)(default).
+  // Tiene que devolver los posts asociados a una pagina. Y la consulta tendra un array de numeros los cuales seran las paginas
+  // ejemplo: [1,2,3,4,5]. Ademas el front le debera pasar
+  // al back la cantidad de post por paginas. Cada post debera llevar la hora que fue creada, por quien,
+  // la hora del ultimo mensaje, por quien. Ademas se le debera pasar la cantidad de paginas.
   try {
-    let firstParam = req.params[0];
-    if (firstParam) [firstParam] = firstParam.split('/');
-    const amount = parseInt(firstParam || 10, 10);
+    const { sortField = 'createdAt', pagesRange, amountPerPage = 5 } = req.query;
 
-    const posts = await Post.find()
-      .select('createdAt message title _id image')
-      .limit(amount);
+    if (validateGetPosts(req.query, res)) return;
+    const pagesRangeParsed = JSON.parse(pagesRange);
 
-    return sendOkResponse(posts, res);
+    const firstPageFromRange = pagesRangeParsed[0] - 1;
+    const lastPageFromRange = pagesRangeParsed[pagesRangeParsed.length - 1];
+
+    const postsAmountQuery = Post.count();
+    const postsForPaginationQuery = Post.find()
+      .populate({
+        path: 'comments',
+        options: {
+          limit: 1,
+          sort: { createdAt: -1 }
+        },
+        select: { createdAt: 1 },
+        populate: {
+          path: 'user',
+          select: { username: 1 }
+        }
+      })
+      .populate('user', 'username')
+      .skip(amountPerPage * firstPageFromRange)
+      .limit(amountPerPage * lastPageFromRange)
+      .sort([[sortField, -1]]);
+
+    const [postsAmount, postsFromServer] = await Promise.all([
+      postsAmountQuery,
+      postsForPaginationQuery
+    ]);
+
+    const leftover = postsAmount % amountPerPage;
+    const integerPart = Math.floor(postsAmount / amountPerPage);
+    const lastPage = leftover ? integerPart + 1 : integerPart;
+
+    const postsDecorated = decorateGetPosts(postsFromServer);
+    const posts = {};
+    pagesRangeParsed.forEach((page, i) => {
+      posts[page] = postsDecorated.slice(i * amountPerPage, amountPerPage * (i + 1));
+    });
+
+    return sendOkResponse({ posts, lastPage }, res);
   } catch (e) {
     return handleError(e, res);
   }
@@ -80,10 +120,10 @@ async function patchPost(req, res) {
       throw makeCommonError(ErrorText.NO_DATA, ErrorText.NO_DATA, 422);
 
     // TODO: validar que las variables a patchear se encuentren dentro del array pasado
-    validateVarsToPatch(updateObject, ['title', 'message', 'image']);
+    // validateVarsToPatch(updateObject, ['title', 'message', 'image']);
 
     // TODO: valida que las variables, si es que se van a patchear, no sean null
-    validateVarsNotNullIffExists(updateObject, ['title', 'message']);
+    // validateVarsNotNullIffExists(updateObject, ['title', 'message']);
 
     const isVerified = verifyPostsFromUser(postId, user);
 
