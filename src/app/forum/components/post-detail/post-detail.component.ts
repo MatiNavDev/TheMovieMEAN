@@ -56,15 +56,15 @@ export class PostDetailComponent implements OnInit {
      */
 
     /**
-     * TODO-Tercero: desarrollar y verificar el poder editar un comment, agregar un comment en un post y eliminar un comment.
-     * Agregar un post, eliminar un post (con los comentarios asociados), y editar un post. Fijarse si hay que desarrollar el perfil
+     * TODO-Tercero: desarrollar y verificar el poder editar un comment y eliminar un comment.
+     * Eliminar un post (con los comentarios asociados), y editar un post. Fijarse si hay que desarrollar el perfil
      * para editar y eliminar; en ese caso, dejarlo como TODO y fijarse de poder ir agregando comments y posts, para poder probar el
      * TODO 1) y el 4). Por ultimo acordarse del css y de como agregarle toodos los estilos por parte de un usuario, a un coment o post
      */
 
     /**
      * TODO-Primero: para lo ultimo
-     * -(FRONT) verificar que ande bien el traer los comentarios, la paginacion de comentarios y el getFullPost
+     * - (FRONT) verificar que ande bien el getFullPost.
      * (por ahora anda bien, desp cuando haga el agregar comentarios, le agrego 100 para ver que funcione bien, varias paginas y eso)
      */
     this.id = this.route.snapshot.params.id;

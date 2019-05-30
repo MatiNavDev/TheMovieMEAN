@@ -1,0 +1,11 @@
+<div>
+  <div>
+    <span>TEMA</span>
+    <span>AUTOR</span>
+    <span>ÚLTIMO MENSAJE</span>
+    <span>RESP.</span>
+  </div>
+  <div *ngFor="let shortItem of items">
+    <forum-item [params]="shortItem" (click)="onClickItem.emit(shortItem)"></forum-item>
+  </div>
+</div>

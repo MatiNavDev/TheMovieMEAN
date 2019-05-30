@@ -1,0 +1,21 @@
+<div>
+  <h1>FORO</h1>
+  <div>
+    <span (click)="onSetForumGrid('p')">Posts</span>
+    <span (click)="onSetForumGrid('c')">Comentarios</span>
+  </div>
+  <div>
+    <forum-grid
+      *ngIf="itemsToShow.length"
+      [params]="itemsToShow"
+      [@fadeIn]="itemsToShow.length"
+      (onClickItem)="onGoToItemDetail()"
+    ></forum-grid>
+    <items-ghosts
+      *ngIf="ghosts.length"
+      [@fadeOut]="!ghosts.length"
+      [ghosts]="ghosts"
+    ></items-ghosts>
+    <paginator [params]="paginatorParams" (onChangePage)="onChangeItemPage($event)"></paginator>
+  </div>
+</div>

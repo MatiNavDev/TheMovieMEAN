@@ -1,3 +1,6 @@
+import { ItemsGhostsComponent } from './forum-grid/items-ghosts/items-ghosts.component';
+import { ForumItemComponent } from './forum-grid/forum-item/forum-item.component';
+import { ForumGridComponent } from './forum-grid/forum-grid.component';
 import { AddButtonComponent } from './add-button/add-button.component';
 import { CustomButtonComponent } from './custom-button/custom-button.component';
 import { NgModule } from '@angular/core';
@@ -20,7 +23,10 @@ import { PaginatorComponent } from './paginator/paginator.component';
     FooterComponent,
     CustomButtonComponent,
     PaginatorComponent,
-    AddButtonComponent
+    AddButtonComponent,
+    ForumGridComponent,
+    ForumItemComponent,
+    ItemsGhostsComponent
   ],
   declarations: [
     HeaderComponent,
@@ -30,7 +36,10 @@ import { PaginatorComponent } from './paginator/paginator.component';
     MenuItemComponent,
     CustomButtonComponent,
     PaginatorComponent,
-    AddButtonComponent
+    AddButtonComponent,
+    ForumGridComponent,
+    ForumItemComponent,
+    ItemsGhostsComponent
   ]
 })
 export class ComponentsModule {}
