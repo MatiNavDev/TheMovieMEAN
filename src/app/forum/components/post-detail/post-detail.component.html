@@ -1,0 +1,5 @@
+<add-button [params]="addButtonParams" (onAddButtonClick)="onGoToNewComment()"></add-button>
+<full-post [params]="fullPostParams"></full-post>
+<comments [comments]="commentsToShow" [@fadeIn]="commentsToShow.length" [@fadeOut]="!commentsToShow.length"></comments>
+<comments-ghosts [ghosts]="ghosts" [@fadeOut]="!ghosts.length"></comments-ghosts>
+<paginator [params]="paginatorParams" (onChangePage)="onChangeCommentPage($event)"></paginator>

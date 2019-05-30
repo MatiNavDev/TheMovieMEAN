@@ -6,18 +6,6 @@
     <span>RESP.</span>
   </div>
   <div *ngFor="let shortPost of posts">
-    <span (click)="onGoToPost(shortPost.id)" *ngIf="shortPost.img" class="shortImg"> </span>
-    <span (click)="onGoToPost(shortPost.id)">
-      {{ shortPost.title }}
-    </span>
-    <span (click)="onGoToProfile(shortPost.autor.id)">
-      {{ shortPost.autor.name }}
-    </span>
-    <span (click)="onGoToProfile(shortPost.lastMsgAutor.id)">
-      {{ shortPost.lastMsgAutor.name }}
-    </span>
-    <span>
-      {{ shortPost.responses }}
-    </span>
+    <post [params]="shortPost"></post>
   </div>
 </div>

@@ -48,6 +48,7 @@ export class AuthRequestService {
     const decodedtoken: DecodedToken = this.jwt.decodeToken(token);
     this.sessionStrgSrvc.setToken(token);
     this.sessionStrgSrvc.setDecodedToken(decodedtoken);
+    this.sessionsrvc.setDecodedToken(decodedtoken);
   }
 
   /**
@@ -61,7 +62,7 @@ export class AuthRequestService {
         return of([]);
       }),
       catchError(error => {
-        throw this.errorSrvc.handleUniversalError(error);
+        throw this.errorSrvc.handleRequestError(error);
       })
     );
   }
@@ -77,12 +78,12 @@ export class AuthRequestService {
     return this.http.post(environment.url + 'auth/register', data).pipe(
       switchMap((response: any) => {
         this.handleSuccessfullLoginOrRegister(response);
-        return of([]);
+        return of(response.result.user);
       }),
       // una vez que el usuario se registro, veo si hay que agregarle la imagen
-      switchMap(() => {
+      switchMap(user => {
         if (data.img) {
-          return this.imgSrvc.uploadImage(data.img, 'user').pipe(
+          return this.imgSrvc.uploadImage(data.img, 'user', user._id).pipe(
             switchMap(updatedUser => {
               this.authStgSrvc.setUser(updatedUser.result);
               return of([]);
@@ -93,7 +94,7 @@ export class AuthRequestService {
         }
       }),
       catchError(error => {
-        throw this.errorSrvc.handleUniversalError(error);
+        throw this.errorSrvc.handleRequestError(error);
       })
     );
   }

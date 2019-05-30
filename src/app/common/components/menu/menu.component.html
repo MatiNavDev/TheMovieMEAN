@@ -4,18 +4,24 @@
     <!-- sidebar menu: : style can be found in sidebar.less -->
     <ul class=" tree" data-widget="tree">
       <app-menu-item
+        *ngIf="sessionMode"
+        [title]="'Perfil'"
+        (onAction)="onGoTo($event)"
+        [route]="'../home/perfil'"
+      ></app-menu-item>
+      <app-menu-item
         [title]="'Mis Búsquedas'"
-        (onAction)="onGoTo('busquedas')"
+        (onAction)="onGoTo($event)"
         [route]="'../home/usuarios-cerca'"
       ></app-menu-item>
       <app-menu-item
         [title]="'Foro'"
-        (onAction)="onGoTo('foro')"
+        (onAction)="onGoTo($event)"
         [route]="'../home/foro'"
       ></app-menu-item>
       <app-menu-item
         [title]="'Usuarios Cerca'"
-        (onAction)="onGoTo('perfil')"
+        (onAction)="onGoTo($event)"
         [route]="'../home/usuarios-cerca'"
       ></app-menu-item>
       <app-menu-item
@@ -28,12 +34,6 @@
         [title]="'Registrarse'"
         (onAction)="onGoTo($event)"
         [route]="'../home/autenticacion/registro'"
-      ></app-menu-item>
-      <app-menu-item
-        *ngIf="sessionMode"
-        [title]="'Perfil'"
-        (onAction)="onGoTo($event)"
-        [route]="'../home/autenticacion'"
       ></app-menu-item>
       <app-menu-item
         *ngIf="!sessionMode"

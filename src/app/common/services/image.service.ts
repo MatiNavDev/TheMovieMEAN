@@ -14,12 +14,13 @@ export class ImageService {
    * Hace el post de la img, debiendo indicar a quien corresponde
    * @param image
    * @param type
+   * @param type
    */
-  public uploadImage(image: File, type: string): Observable<any> {
+  public uploadImage(image: File, type: string, id: string): Observable<any> {
     let formData: FormData = new FormData();
 
     formData.append('image', image);
 
-    return this.http.post(environment.url + `image-upload?type=${type}`, formData);
+    return this.http.post(environment.url + `image-upload?type=${type}&objId=${id}`, formData);
   }
 }

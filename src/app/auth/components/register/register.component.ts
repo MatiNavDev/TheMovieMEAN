@@ -51,17 +51,10 @@ export class RegisterComponent implements OnInit {
    */
   public onRegister() {
     this.loadingSrvc.show();
-    this.authRequestSrvc.userRegister(this.regForm.value).subscribe(
-      res => {
-        this.loadingSrvc.hide();
-
-        this.router.navigate(['../../busquedas'], { relativeTo: this.route });
-      },
-      errors => {
-        this.loadingSrvc.hide();
-        this.errorSrvc.showErrorsToUser(errors);
-      }
-    );
+    this.authRequestSrvc.userRegister(this.regForm.value).subscribe(() => {
+      this.loadingSrvc.hide();
+      this.router.navigate(['../../busquedas'], { relativeTo: this.route });
+    });
   }
 
   /**

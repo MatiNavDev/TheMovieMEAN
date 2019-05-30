@@ -42,15 +42,9 @@ export class LoginComponent implements OnInit {
 
   public onLogin() {
     this.loadingSrvc.show();
-    this.authRequestSrvc.userLogin(this.loginForm.value).subscribe(
-      res => {
-        this.loadingSrvc.hide();
-        this.router.navigate(['../../foro'], { relativeTo: this.route });
-      },
-      errors => {
-        this.loadingSrvc.hide();
-        this.errorSrvc.showErrorsToUser(errors);
-      }
-    );
+    this.authRequestSrvc.userLogin(this.loginForm.value).subscribe(res => {
+      this.loadingSrvc.hide();
+      this.router.navigate(['../../foro'], { relativeTo: this.route });
+    });
   }
 }

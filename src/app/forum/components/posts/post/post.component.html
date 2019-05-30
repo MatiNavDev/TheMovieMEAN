@@ -1,5 +1,13 @@
-<div>
-    <div *ngFor='let post of posts'>
-        <post></post>
-    </div>
-</div>
+<span (click)="onGoToPostDetail(params.id)" *ngIf="params.img" class="shortImg"> </span>
+<span (click)="onGoToPostDetail(params.id)">
+  {{ params.title }}
+</span>
+<span (click)="onGoToProfile(params.autor.id)">
+  {{ params.autor.name }}
+</span>
+<span (click)="onGoToProfile(params.lastMsgAutor.id)">
+  {{ params.lastMsgAutor.name }}
+</span>
+<span>
+  {{ params.responses }}
+</span>

@@ -22,6 +22,31 @@ function validateRequireds(vars, objWithVars) {
     );
 }
 
+/**
+ * Valida que el request al post sea correcto. Si tira error, entonces retorna verdadero
+ * @param {*} objWithVars
+ * @param {*} varsToValidate
+ * @param {*} res
+ */
+function validateGetPostsOrComments(objWithVars, varsToValidate, res) {
+  let { pagesRange } = objWithVars;
+  pagesRange = JSON.parse(pagesRange);
+  const requiredError = validateRequireds(varsToValidate, objWithVars);
+  const formatError = !Array.isArray(pagesRange)
+    ? makeCommonError(
+        ErrorText.FORMAT_ERROR,
+        ErrorText.GET_POSTORCOMMENT_FORMAT_ERROR + typeof pagesRange,
+        422
+      )
+    : null;
+
+  if (requiredError || formatError) {
+    res.status(422).send({ errors: [requiredError, formatError] });
+    return true;
+  }
+}
+
 module.exports = {
-  validateRequireds
+  validateRequireds,
+  validateGetPostsOrComments
 };

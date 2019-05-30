@@ -26,6 +26,6 @@ export class PaginatorComponent implements OnChanges {
    * @param string
    */
   public showNextPages() {
-    this.pages ? !this.pages.includes(this.params.lastPage) : null;
+    return this.params.actualPage != this.params.lastPage;
   }
 }

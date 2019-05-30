@@ -5,11 +5,6 @@ import { Component, OnInit, Input, OnChanges } from '@angular/core';
   templateUrl: './posts.component.html',
   styleUrls: ['./posts.component.scss']
 })
-export class PostsComponent implements OnChanges {
+export class PostsComponent {
   @Input('posts') posts;
-  constructor() {}
-
-  ngOnChanges() {
-    console.log(this.posts);
-  }
 }
