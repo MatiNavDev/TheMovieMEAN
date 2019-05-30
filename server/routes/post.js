@@ -8,8 +8,17 @@ const router = express.Router();
 // Obtiene los post de un usuario
 router.get('/user/*?', AuthMiddleware.authMiddleware, PostController.getPostsFromUser);
 
+router.get('/latest/:amount', AuthMiddleware.authMiddleware, PostController.getLatestPosts);
+router.get(
+  '/mostCommented/:amount',
+  AuthMiddleware.authMiddleware,
+  PostController.getMostCommentedPosts
+);
+
+router.get('/:postId', AuthMiddleware.authMiddleware, PostController.getFullPost);
+
 // Obtiene los posts
-router.get('', AuthMiddleware.authMiddleware, PostController.getPosts);
+router.get('', PostController.getPosts);
 
 router.patch('/:postId', AuthMiddleware.authMiddleware, PostController.patchPost);
 

@@ -1,6 +1,6 @@
 module.exports = {
   FORMAT_ERROR: 'Formato Erroneo',
-  GET_POST_FORMAT_ERROR: 'pagesRange debe ser del tipo Array y se recibio un ',
+  GET_POSTORCOMMENT_FORMAT_ERROR: 'pagesRange debe ser del tipo Array y se recibio un ',
   BUCKET_ERROR: 'Este modelo no soporta imagen.',
   ERROR: 'Error',
   IMG_UPL_ERROR: 'Error al actualizar!',

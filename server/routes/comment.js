@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/user/*?', AuthMiddleware.authMiddleware, CommentController.getCommentsFromUser);
 
-router.get('/:postId/*?', AuthMiddleware.authMiddleware, CommentController.getCommentsFromPost);
+router.get('/:postId', AuthMiddleware.authMiddleware, CommentController.getCommentsFromPost);
 
 router.patch('/:commentId', AuthMiddleware.authMiddleware, CommentController.patchComment);
 

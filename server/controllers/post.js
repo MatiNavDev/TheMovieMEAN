@@ -6,8 +6,9 @@ const { sendOkResponse } = require('./helper/responses');
 const { handleError } = require('./helper/error');
 const { makeCommonError } = require('../services/error');
 const ErrorText = require('../services/text/error.js');
-const { validateGetPosts } = require('../helpers/posts/validator');
+const { validateGetPostsOrComments } = require('../helpers/validator');
 const { decorateGetPosts } = require('../helpers/posts/decorator');
+const { getLastPage } = require('../helpers/common');
 
 // /////// public methods //////////////
 
@@ -26,7 +27,7 @@ async function getPosts(req, res) {
   try {
     const { sortField = 'createdAt', pagesRange, amountPerPage = 5 } = req.query;
 
-    if (validateGetPosts(req.query, res)) return;
+    if (validateGetPostsOrComments(req.query, ['pagesRange'], res)) return;
     const pagesRangeParsed = JSON.parse(pagesRange);
 
     const firstPageFromRange = pagesRangeParsed[0] - 1;
@@ -56,17 +57,16 @@ async function getPosts(req, res) {
       postsForPaginationQuery
     ]);
 
-    const leftover = postsAmount % amountPerPage;
-    const integerPart = Math.floor(postsAmount / amountPerPage);
-    const lastPage = leftover ? integerPart + 1 : integerPart;
+    const lastPage = getLastPage(postsAmount, amountPerPage);
 
     const postsDecorated = decorateGetPosts(postsFromServer);
     const posts = {};
     pagesRangeParsed.forEach((page, i) => {
-      posts[page] = postsDecorated.slice(i * amountPerPage, amountPerPage * (i + 1));
+      const postsFromPage = postsDecorated.slice(i * amountPerPage, amountPerPage * (i + 1));
+      if (postsFromPage.length) posts[page] = postsFromPage;
     });
 
-    return sendOkResponse({ posts, lastPage }, res);
+    return sendOkResponse({ items: posts, lastPage }, res);
   } catch (e) {
     return handleError(e, res);
   }
@@ -184,7 +184,7 @@ async function postNewPost(req, res) {
 
     return sendOkResponse(
       {
-        post: parsedPost
+        newElement: parsedPost
       },
       res
     );
@@ -237,10 +237,79 @@ async function deletePost(req, res) {
   }
 }
 
+/**
+ * Maneja el obtener toda la data asociada a un post (solo la data del post, no los comentarios asociados).
+ * @param {*} req
+ * @param {*} res
+ */
+async function getFullPost(req, res) {
+  /**
+   * No es necesaria realizar ninguna verificacion, simplemente traer el post.
+   * Ademas se le debera enviar el nombre y el usuario por ahora (TODO: agregarle toda la data necesaria, ver 3djuegos)
+   */
+  try {
+    const { postId } = req.params;
+
+    const fullPost = await Post.findById(postId).populate('user', 'username image');
+
+    return sendOkResponse({ fullPost }, res);
+  } catch (e) {
+    handleError(e, res);
+  }
+}
+
+/**
+ * Obtiene los ultimos posts creados
+ * @param {*} req
+ * @param {*} res
+ */
+async function getLatestPosts(req, res) {
+  try {
+    const { amount } = req.params;
+
+    const latestPosts = await Post.find()
+      .sort([['createdAt', -1]])
+      .limit(Number(amount));
+
+    return sendOkResponse({ latestPosts }, res);
+  } catch (e) {
+    handleError(e, res);
+  }
+}
+
+/**
+ * Obtiene los posts mas comentados
+ * @param {*} req
+ * @param {*} res
+ */
+async function getMostCommentedPosts(req, res) {
+  try {
+    const { amount } = req.params;
+    const mostCommentedPostsRef = await Comment.aggregate([
+      { $sortByCount: '$post' },
+      { $limit: +amount }
+    ]);
+    const ids = mostCommentedPostsRef.map(p => p._id.toString());
+
+    let mostCommentedPosts = await Post.find({ _id: { $in: ids } }).select('title image');
+    mostCommentedPosts = mostCommentedPosts.map(p => ({
+      id: p.id,
+      image: p.image,
+      title: p.title
+    }));
+    return sendOkResponse({ mostCommentedPosts }, res);
+  } catch (e) {
+    handleError(e, res);
+  }
+}
+
 module.exports = {
   getPosts,
   getPostsFromUser,
   patchPost,
   postNewPost,
-  deletePost
+  deletePost,
+  getFullPost,
+  getLatestPosts,
+  getMostCommentedPosts
 };
