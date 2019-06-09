@@ -7,7 +7,7 @@ const ErrorText = require('../services/text/error.js');
 const { handleError } = require('./helper/error');
 const { makeCommonError } = require('../services/error');
 const { validateGetPostsOrComments } = require('../helpers/validator');
-const { decorateGetComments } = require('../helpers/comments/decorator');
+const { decorateGetComments } = require('../helpers/decorator');
 const { getLastPage } = require('../helpers/common');
 
 // /////// PUBLIC FUNCTIONS //////////////
@@ -19,12 +19,11 @@ const { getLastPage } = require('../helpers/common');
  * @param {*} res
  */
 async function getCommentsFromPost(req, res) {
-  // El order es por fecha ascendente (los mas recientes ultimos AL CONTRARIO DE LOS POSTS QUE ES MAS RECIENTE PRIMERO).
+  // El orden es por fecha ascendente (los mas recientes ultimos AL CONTRARIO DE LOS POSTS QUE ES MAS RECIENTE PRIMERO).
   // Tiene que devolver los comments asociados a una pagina. Y la consulta tendra un array de numeros los cuales seran las paginas
   // ejemplo: [1,2,3,4,5]. Ademas el front le debera pasar
   // al back la cantidad de comment por paginas. Cada comment debera llevar la hora que fue creado, por quien, la img del autor
   // Ademas se le debera pasar la cantidad de paginas.
-
   try {
     const { pagesRange, amountPerPage = 5 } = req.query;
     const { postId } = req.params;
@@ -49,7 +48,6 @@ async function getCommentsFromPost(req, res) {
     ]);
 
     const lastPage = getLastPage(commentsAmount, amountPerPage);
-
     const commentssDecorated = decorateGetComments(commentsFromServer);
     const comments = {};
     pagesRangeParsed.forEach((page, i) => {
@@ -70,18 +68,36 @@ async function getCommentsFromPost(req, res) {
  */
 async function getCommentsFromUser(req, res) {
   try {
-    let { amount } = req.query;
-    amount = parseInt(amount || 10, 10);
+    const { pagesRange, amountPerPage = 5 } = req.query;
     const { user } = res.locals;
 
-    const foundUser = await User.findById(user.id).populate({
-      path: 'comments',
-      options: {
-        limit: amount
-      }
-    });
+    if (validateGetPostsOrComments({ pagesRange }, ['pagesRange'], res)) return;
+    const pagesRangeParsed = JSON.parse(pagesRange);
 
-    return sendOkResponse({ comments: foundUser.comments }, res);
+    const firstPageFromRange = pagesRangeParsed[0] - 1;
+    const lastPageFromRange = pagesRangeParsed[pagesRangeParsed.length - 1];
+
+    const commentsFromUserQuery = { user: user.id };
+    const commentsAmountQuery = Comment.count(commentsFromUserQuery);
+    const commentsForPaginationQuery = Comment.find(commentsFromUserQuery)
+      .populate('user', 'username image')
+      .skip(amountPerPage * firstPageFromRange)
+      .limit(amountPerPage * lastPageFromRange)
+      .sort([['created_at', 1]]);
+
+    const [commentsAmount, commentsFromServer] = await Promise.all([
+      commentsAmountQuery,
+      commentsForPaginationQuery
+    ]);
+
+    const lastPage = getLastPage(commentsAmount, amountPerPage);
+    const commentssDecorated = decorateGetComments(commentsFromServer);
+    const comments = {};
+    pagesRangeParsed.forEach((page, i) => {
+      const commentsFromPage = commentssDecorated.slice(i * amountPerPage, amountPerPage * (i + 1));
+      if (commentsFromPage.length) comments[page] = commentsFromPage;
+    });
+    return sendOkResponse({ items: comments, lastPage }, res);
   } catch (e) {
     return handleError(e, res);
   }

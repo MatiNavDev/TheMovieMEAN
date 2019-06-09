@@ -54,7 +54,15 @@ const userSchema = new Schema({
       type: Schema.Types.ObjectId,
       ref: 'Search'
     }
-  ]
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 userSchema.methods.toJSON = function() {

@@ -1,4 +1,4 @@
-import { ShareDataService } from './../../services/share-data.service';
+import { ShareForumDataService } from './../../services/share-data.service';
 import { PaginatorService } from './../../../common/services/paginator.service';
 import { ForumService } from './../../services/forum.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -37,7 +37,7 @@ export class PostDetailComponent implements OnInit {
     private forumSrvc: ForumService,
     private paginatorSrvc: PaginatorService,
     private router: Router,
-    private shareForumSrvc: ShareDataService
+    private shareForumSrvc: ShareForumDataService
   ) {}
 
   ngOnInit() {

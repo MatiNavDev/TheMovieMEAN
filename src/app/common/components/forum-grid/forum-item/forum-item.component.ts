@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'forum-item',
@@ -7,4 +7,10 @@ import { Component, Input } from '@angular/core';
 })
 export class ForumItemComponent {
   @Input('params') params;
+  @Output() onItemDetail = new EventEmitter();
+  @Output() onEditOrDeleteItem = new EventEmitter();
+
+  public onGoToProfile(authorId) {
+    console.log(authorId);
+  }
 }

@@ -2,10 +2,16 @@
   <div>
     <span>TEMA</span>
     <span>AUTOR</span>
-    <span>ÚLTIMO MENSAJE</span>
-    <span>RESP.</span>
+    <span *ngIf="type === 'posts'">ÚLTIMO MENSAJE</span>
+    <span *ngIf="type !== 'posts'">ÚLTIMA MODIFICACION</span>
+    <span *ngIf="type === 'posts'">RESP.</span>
+    <span>ACCIONES</span>
   </div>
   <div *ngFor="let shortItem of items">
-    <forum-item [params]="shortItem" (click)="onClickItem.emit(shortItem)"></forum-item>
+    <forum-item
+      [params]="shortItem"
+      (onEditOrDeleteItem)="onEditOrDeleteItem.emit($event)"
+      (onItemDetail)="onClickItem.emit($event)"
+    ></forum-item>
   </div>
 </div>

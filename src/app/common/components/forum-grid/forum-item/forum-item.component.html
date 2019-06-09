@@ -1,0 +1,34 @@
+<div>
+  <span (click)="onItemDetail.emit(params.id)" *ngIf="params.img" class="shortImg"> </span>
+  <span (click)="onItemDetail.emit(params.id)">
+    {{ params.title || params.message }}
+  </span>
+  <span (click)="onGoToProfile(params.autor.id)">
+    {{ params.autor.username }}
+  </span>
+  <span *ngIf="params.lastMsgAutor" (click)="onGoToProfile(params.lastMsgAutor.id)">
+    {{ params.lastMsgAutor.name }}
+  </span>
+  <span *ngIf="params.updatedAt" (click)="onGoToProfile(params.lastMsgAutor.id)">
+    {{ params.updatedAt }}
+  </span>
+  <span *ngIf="params.responsesAmount">
+    {{ params.responses }}
+  </span>
+  <span>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="onEditOrDeleteItem.emit({ id: params.id, type: 'delete' })"
+    >
+      <i class="glyphicon glyphicon-pencil fa fa-pencil"></i>
+    </button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="onEditOrDeleteItem.emit({ id: params.id, type: 'delete' })"
+    >
+      <i class="glyphicon glyphicon-trash fa fa-trash"></i>
+    </button>
+  </span>
+</div>

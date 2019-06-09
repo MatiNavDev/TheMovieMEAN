@@ -11,7 +11,15 @@ const locationSchema = new Schema({
     type: Number,
     required: 'Longitude is required'
   },
-  user: { type: Schema.Types.ObjectId, ref: 'User' }
+  user: { type: Schema.Types.ObjectId, ref: 'User' },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 module.exports = mongoose.model('Location', locationSchema);

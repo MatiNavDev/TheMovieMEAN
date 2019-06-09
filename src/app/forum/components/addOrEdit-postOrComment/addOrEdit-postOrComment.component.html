@@ -1,6 +1,10 @@
 <div class="vertical-container">
-  <form class="vertical-center" [formGroup]="addPostOrCommentForm" (submit)="onAddPostOrComment()">
-    <div class="form-group" *ngIf="this.addPostOrCommentForm.controls.title">
+  <form
+    class="vertical-center"
+    [formGroup]="addOrEditPostOrCommentForm"
+    (submit)="onAddPostOrComment()"
+  >
+    <div class="form-group" *ngIf="this.addOrEditPostOrCommentForm.controls.title">
       <label for="title">Título:</label>
       <input
         type="text"
@@ -19,7 +23,7 @@
         formControlName="message"
       ></textarea>
     </div>
-    <ng-container *ngIf="this.addPostOrCommentForm.controls.img">
+    <ng-container *ngIf="this.addOrEditPostOrCommentForm.controls.img">
       <div class="form-group">Imagen en Miniatura del Tema</div>
       <div class="form-group">
         <app-image-upload (updateImg)="onUpdatedImg($event)"></app-image-upload>
@@ -34,8 +38,11 @@
 
     <!-- TODO: crear modal que muestre el mensaje previsualizado -->
     <div class="form-buttons">
-      <button [disabled]="addPostOrCommentForm.invalid" class="btn">Previsualiza tu Mensaje</button>
-      <button type="submit" [disabled]="addPostOrCommentForm.invalid" class="btn btn-primary">
+      <button class="btn btn-danger" (click)="onCancel()">Cancelar</button>
+      <button [disabled]="addOrEditPostOrCommentForm.invalid" class="btn">
+        Previsualiza tu Mensaje
+      </button>
+      <button type="submit" [disabled]="addOrEditPostOrCommentForm.invalid" class="btn btn-primary">
         Publicar Mensaje
       </button>
     </div>

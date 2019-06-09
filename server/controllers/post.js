@@ -7,7 +7,7 @@ const { handleError } = require('./helper/error');
 const { makeCommonError } = require('../services/error');
 const ErrorText = require('../services/text/error.js');
 const { validateGetPostsOrComments } = require('../helpers/validator');
-const { decorateGetPosts } = require('../helpers/posts/decorator');
+const { decorateGetPostsOrCommentDetailed } = require('../helpers/decorator');
 const { getLastPage } = require('../helpers/common');
 
 // /////// public methods //////////////
@@ -59,7 +59,7 @@ async function getPosts(req, res) {
 
     const lastPage = getLastPage(postsAmount, amountPerPage);
 
-    const postsDecorated = decorateGetPosts(postsFromServer);
+    const postsDecorated = decorateGetPostsOrCommentDetailed(postsFromServer);
     const posts = {};
     pagesRangeParsed.forEach((page, i) => {
       const postsFromPage = postsDecorated.slice(i * amountPerPage, amountPerPage * (i + 1));
@@ -80,20 +80,49 @@ async function getPosts(req, res) {
  */
 async function getPostsFromUser(req, res) {
   try {
-    let firstParam = req.params[0];
-    if (firstParam) [firstParam] = firstParam.split('/');
-    const amount = parseInt(firstParam || 10, 10);
+    const { sortField = 'createdAt', pagesRange, amountPerPage = 5 } = req.query;
     const { user } = res.locals;
 
-    const userPopulated = await User.findById(user.id).populate({
-      path: 'posts',
-      options: {
-        limit: amount
-      },
-      select: 'createdAt message title _id'
-    });
+    if (validateGetPostsOrComments({ pagesRange }, ['pagesRange'], res)) return;
+    const pagesRangeParsed = JSON.parse(pagesRange);
 
-    return sendOkResponse(userPopulated.posts, res);
+    const firstPageFromRange = pagesRangeParsed[0] - 1;
+    const lastPageFromRange = pagesRangeParsed[pagesRangeParsed.length - 1];
+
+    const postsFromUserQuery = { user: user.id };
+    const postsAmountQuery = Post.count(postsFromUserQuery);
+    const postsForPaginationQuery = Post.find(postsFromUserQuery)
+      .populate({
+        path: 'comments',
+        options: {
+          limit: 1,
+          sort: { createdAt: -1 }
+        },
+        select: { createdAt: 1 },
+        populate: {
+          path: 'user',
+          select: { username: 1 }
+        }
+      })
+      .populate('user', 'username')
+      .skip(amountPerPage * firstPageFromRange)
+      .limit(amountPerPage * lastPageFromRange)
+      .sort([[sortField, -1]]);
+
+    const [postsAmount, postsFromServer] = await Promise.all([
+      postsAmountQuery,
+      postsForPaginationQuery
+    ]);
+
+    const lastPage = getLastPage(postsAmount, amountPerPage);
+
+    const postsDecorated = decorateGetPostsOrCommentDetailed(postsFromServer);
+    const posts = {};
+    pagesRangeParsed.forEach((page, i) => {
+      const postsFromPage = postsDecorated.slice(i * amountPerPage, amountPerPage * (i + 1));
+      if (postsFromPage.length) posts[page] = postsFromPage;
+    });
+    return sendOkResponse({ items: posts, lastPage }, res);
   } catch (e) {
     return handleError(e, res);
   }

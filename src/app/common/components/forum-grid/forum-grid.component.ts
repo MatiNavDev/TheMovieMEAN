@@ -7,12 +7,10 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./forum-grid.component.scss']
 })
 export class ForumGridComponent {
-  @Input('params') params: any[];
+  @Input('items') items: any[];
+  @Input('type') type: string;
   @Output() onClickItem = new EventEmitter();
+  @Output() onEditOrDeleteItem = new EventEmitter();
 
   constructor(private router: Router, private route: ActivatedRoute) {}
-
-  public onGoToProfile(authorId) {
-    //TODO
-  }
 }

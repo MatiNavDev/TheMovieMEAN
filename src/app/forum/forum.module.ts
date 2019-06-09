@@ -1,4 +1,4 @@
-import { AddPostOrCommentComponent } from './components/add-postOrComment/add-postOrComment.component';
+import { AddOrEditPostOrCommentComponent } from './components/addOrEdit-postOrComment/addOrEdit-postOrComment.component';
 import { CommentsGhostsComponent } from './components/comments-ghosts/comments-ghosts.component';
 import { PostsGhostsComponent } from './components/posts-ghosts/posts-ghosts.component';
 import { CommentsComponent } from './components/post-detail/comments/comments.component';
@@ -29,7 +29,7 @@ import { PostsComponent } from './components/posts/posts.component';
     CommentComponent,
     PostsGhostsComponent,
     CommentsGhostsComponent,
-    AddPostOrCommentComponent
+    AddOrEditPostOrCommentComponent
   ]
 })
 export class ForumModule {}

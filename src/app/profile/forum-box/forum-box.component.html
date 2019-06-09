@@ -1,15 +1,17 @@
 <div>
   <h1>FORO</h1>
   <div>
-    <span (click)="onSetForumGrid('p')">Posts</span>
-    <span (click)="onSetForumGrid('c')">Comentarios</span>
+    <span (click)="onSetForumGridType('posts')">Posts</span>
+    <span (click)="onSetForumGridType('comments')">Comentarios</span>
   </div>
   <div>
     <forum-grid
       *ngIf="itemsToShow.length"
-      [params]="itemsToShow"
+      [type]="itemType"
+      [items]="itemsToShow"
       [@fadeIn]="itemsToShow.length"
-      (onClickItem)="onGoToItemDetail()"
+      (onClickItem)="onGoToItemDetail($event)"
+      (onEditOrDeleteItem)="onEditOrDeleteItem($event)"
     ></forum-grid>
     <items-ghosts
       *ngIf="ghosts.length"

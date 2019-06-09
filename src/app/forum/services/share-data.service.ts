@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root'
 })
-export class ShareDataService {
+export class ShareForumDataService {
   private postSource = new BehaviorSubject({});
   postRelatedToComment = this.postSource.asObservable();
   private commentLastPageSource = new BehaviorSubject(1);

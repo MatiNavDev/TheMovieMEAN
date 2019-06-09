@@ -13,7 +13,15 @@ const filterSchema = new Schema({
     required: true,
     max: [128, 'Too long, max is 64 characters']
   },
-  search: { type: Schema.Types.ObjectId, ref: 'Search' } // *
+  search: { type: Schema.Types.ObjectId, ref: 'Search' },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 module.exports = mongoose.model('Filter', filterSchema);
