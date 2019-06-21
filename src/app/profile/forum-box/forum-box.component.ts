@@ -5,6 +5,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { trigger } from '@angular/animations';
 import { fadeIn, fadeOut } from '../../../utils/animations/fade-animations';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   animations: [trigger('fadeOut', fadeOut()), trigger('fadeIn', fadeIn())],
@@ -14,7 +15,7 @@ import { fadeIn, fadeOut } from '../../../utils/animations/fade-animations';
 })
 export class ForumBoxComponent implements OnInit {
   @Input('params') params;
-  private urlFromitems = environment.url + 'posts/user/';
+  private urlFromitems: string;
   private items: any = {
     posts: {},
     comments: {}
@@ -24,16 +25,32 @@ export class ForumBoxComponent implements OnInit {
   public ghosts = [];
   public itemsToShow = [];
   public paginatorParams: any;
-  public itemType = 'posts';
+  public itemsType: 'comments' | 'posts' = 'posts';
 
   constructor(
     private loadingSrvc: LoadingService,
     private paginatorSrvc: PaginatorService,
-    private forumCommonSrvc: ForumCommonService
+    private forumCommonSrvc: ForumCommonService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
+  /**
+   * TODO: fijarse que funcione bien con varias paginas
+   */
+
   ngOnInit() {
-    this.onChangeItemPage(1);
+    debugger;
+    let commentPage = Number(this.route.snapshot.queryParams.page);
+    if (commentPage) {
+      this.itemsType = 'comments';
+    } else {
+      commentPage = 1;
+    }
+
+    this.urlFromitems = `${environment.url}/${this.itemsType}/user/`;
+
+    this.onChangeItemPage(commentPage);
   }
 
   /**
@@ -46,18 +63,18 @@ export class ForumBoxComponent implements OnInit {
     this.ghosts = new Array(environment.pageSize);
     this.itemsToShow = [];
     this.paginatorSrvc
-      .handlePageChanged(this.items[this.itemType], pageNumber, this.urlFromitems)
+      .handlePageChanged(this.items[this.itemsType], pageNumber, this.urlFromitems)
       .subscribe(data => {
         this.loadingSrvc.hide();
         this.ghosts = [];
         const paginatorResponse = data.result;
-        this.items[this.itemType] = paginatorResponse.items;
+        this.items[this.itemsType] = paginatorResponse.items;
         if (paginatorResponse.lastPage) this.lastPage = paginatorResponse.lastPage;
         this.actualPage = pageNumber;
-        this.itemsToShow = this.items[this.itemType][this.actualPage] || [];
+        this.itemsToShow = this.items[this.itemsType][this.actualPage] || [];
         this.paginatorParams = {
           actualPage: this.actualPage,
-          elements: this.items[this.itemType],
+          elements: this.items[this.itemsType],
           lastPage: this.lastPage
         };
       });
@@ -67,12 +84,13 @@ export class ForumBoxComponent implements OnInit {
    *
    * @param type
    */
-  public onSetForumGridType(type: string) {
-    this.itemType = type;
+  public onSetForumGridType(type: 'comments' | 'posts') {
+    this.itemsType = type;
     this.urlFromitems = environment.url + type + '/user/';
     this.onChangeItemPage(1);
   }
 
+  //TODO
   public onGoToItemDetail(itemId) {
     console.log(itemId);
   }
@@ -80,11 +98,16 @@ export class ForumBoxComponent implements OnInit {
   public onEditOrDeleteItem(params) {
     switch (params.type) {
       case 'edit':
-        this.editItem(params.id);
+        this.router.navigate([`../../foro/${params.postId}/edit-comment/${params.commentId}`], {
+          relativeTo: this.route,
+          queryParams: {
+            page: this.actualPage
+          }
+        });
         break;
       case 'delete':
-        this.forumCommonSrvc.deletePostOrComment(params.id, this.itemType).subscribe(data => {
-          this.items[this.itemType] = [];
+        this.forumCommonSrvc.deletePostOrComment(params.id, this.itemsType).subscribe(data => {
+          this.items[this.itemsType] = [];
           this.onChangeItemPage(1);
         });
         break;
@@ -93,9 +116,3 @@ export class ForumBoxComponent implements OnInit {
     }
   }
 }
-
-/**
- * TODO: hacer que los comentarios y los posts sean del usuario en cuestion. Una vez que este eso, fijarse de armar la estructura
- * del cuadrado, para poder agregarle el boton editar/eliminar (fijarse como hacerlo), y desp fijarse que se haya borrado correctamente
- * el post o el comentario.
- */

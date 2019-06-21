@@ -3,23 +3,26 @@
   <span (click)="onItemDetail.emit(params.id)">
     {{ params.title || params.message }}
   </span>
-  <span (click)="onGoToProfile(params.autor.id)">
-    {{ params.autor.username }}
-  </span>
-  <span *ngIf="params.lastMsgAutor" (click)="onGoToProfile(params.lastMsgAutor.id)">
-    {{ params.lastMsgAutor.name }}
-  </span>
+  <ng-container *ngIf="params.title">
+    <span (click)="onGoToProfile(params.autor.id)">
+      {{ params.autor.username }}
+    </span>
+    <span *ngIf="params.lastMsgAutor" (click)="onGoToProfile(params.lastMsgAutor.id)">
+      {{ params.lastMsgAutor.name }}
+    </span>
+  </ng-container>
   <span *ngIf="params.updatedAt" (click)="onGoToProfile(params.lastMsgAutor.id)">
     {{ params.updatedAt }}
   </span>
   <span *ngIf="params.responsesAmount">
-    {{ params.responses }}
+    {{ params.responsesAmount }}
   </span>
   <span>
     <button
+      *ngIf="params.message"
       type="button"
       class="btn btn-secondary"
-      (click)="onEditOrDeleteItem.emit({ id: params.id, type: 'delete' })"
+      (click)="onEditOrDeleteItem.emit({ commentId: params.id, postId: params.post, type: 'edit' })"
     >
       <i class="glyphicon glyphicon-pencil fa fa-pencil"></i>
     </button>

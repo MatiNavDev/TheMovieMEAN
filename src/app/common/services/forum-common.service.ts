@@ -11,24 +11,12 @@ import { Observable, BehaviorSubject } from 'rxjs';
 export class ForumCommonService {
   constructor(private http: HttpClient, private errorSrvc: ErrorHandlerService) {}
 
-  private editMessageSource = new BehaviorSubject('');
-  editMessage = this.editMessageSource.asObservable();
-
-  getEditMessage() {
-    return this.editMessage;
-  }
-
-  setEditMessage(editMessage: string) {
-    this.editMessageSource.next(editMessage);
-  }
-
   /**
    * Envia al server un post o un comentario para eliminar
    * @param itemId
    * @param type
    */
   public deletePostOrComment(itemId, type): Observable<any> {
-    debugger;
     return this.http.delete(`${environment.url}/${type}/${itemId}`).pipe(
       catchError(error => {
         throw this.errorSrvc.handleRequestError(error);
@@ -37,13 +25,12 @@ export class ForumCommonService {
   }
 
   /**
-   * Envia al server un post o un comentario para eliminar.
-   * TODO: hay que ver como agregar imagenes (en el add post) y como editarlas (y aca se guardarian)
+   * Maneja el editar un comentario
    * @param itemId
    * @param type
    */
-  public editPostOrComment(itemId, type, params): Observable<any> {
-    return this.http.put(`${environment.url}/${type}/${itemId}`, params).pipe(
+  public editComment(itemId, params): Observable<any> {
+    return this.http.patch(`${environment.url}/comments/${itemId}`, params).pipe(
       catchError(error => {
         throw this.errorSrvc.handleRequestError(error);
       })

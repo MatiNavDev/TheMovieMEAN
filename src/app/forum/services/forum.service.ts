@@ -1,3 +1,4 @@
+import { environment } from './../../../environments/environment';
 import { ImageService } from '../../common/services/image.service';
 import { ErrorHandlerService } from '../../common/services/error-handler.service';
 import { environment } from '../../../environments/environment';
@@ -88,6 +89,23 @@ export class ForumService {
       switchMap((response: any) => {
         const { latestPosts } = response.result;
         return of(latestPosts);
+      }),
+      catchError(error => {
+        throw this.errorSrvc.handleRequestError(error);
+      })
+    );
+  }
+
+  /**
+   * Obtiene el comentario con los detalles del servidor
+   * @param commentId
+   */
+  public getFullComment(commentId: string) {
+    const route = environment.url + `comments/${commentId}/detailed`;
+    return this.http.get(route).pipe(
+      switchMap((response: any) => {
+        const { messageFromFullComment } = response.result;
+        return of(messageFromFullComment);
       }),
       catchError(error => {
         throw this.errorSrvc.handleRequestError(error);

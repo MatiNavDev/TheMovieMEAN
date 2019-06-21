@@ -48,7 +48,7 @@ async function getCommentsFromPost(req, res) {
     ]);
 
     const lastPage = getLastPage(commentsAmount, amountPerPage);
-    const commentssDecorated = decorateGetComments(commentsFromServer);
+    const commentssDecorated = decorateGetComments(commentsFromServer, 'post');
     const comments = {};
     pagesRangeParsed.forEach((page, i) => {
       const commentsFromPage = commentssDecorated.slice(i * amountPerPage, amountPerPage * (i + 1));
@@ -91,7 +91,7 @@ async function getCommentsFromUser(req, res) {
     ]);
 
     const lastPage = getLastPage(commentsAmount, amountPerPage);
-    const commentssDecorated = decorateGetComments(commentsFromServer);
+    const commentssDecorated = decorateGetComments(commentsFromServer, 'user');
     const comments = {};
     pagesRangeParsed.forEach((page, i) => {
       const commentsFromPage = commentssDecorated.slice(i * amountPerPage, amountPerPage * (i + 1));
@@ -244,10 +244,32 @@ async function deleteComment(req, res) {
   }
 }
 
+/**
+ * Obtiene el mensaje de un comentario ( porque el resto de la data ya se le envio previamente)
+ * @param {*} req
+ * @param {*} res
+ */
+async function getDetailedComment(req, res) {
+  try {
+    const { commentId } = req.params;
+    const { user } = res.locals;
+
+    const isVerified = verifyCommentFromUser(commentId, user);
+    if (!isVerified)
+      throw makeCommonError(ErrorText.WRONG_PERMISSIONS, ErrorText.COMMENT_NOT_FROM_USER, 403);
+
+    const comment = await Comment.findById(commentId).select('message');
+    return sendOkResponse({ messageFromFullComment: comment.message }, res);
+  } catch (e) {
+    return handleError(e, res);
+  }
+}
+
 module.exports = {
   getCommentsFromPost,
   getCommentsFromUser,
   patchComment,
   postNewComment,
-  deleteComment
+  deleteComment,
+  getDetailedComment
 };

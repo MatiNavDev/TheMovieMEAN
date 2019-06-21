@@ -7,7 +7,7 @@ const { handleError } = require('./helper/error');
 const { makeCommonError } = require('../services/error');
 const ErrorText = require('../services/text/error.js');
 const { validateGetPostsOrComments } = require('../helpers/validator');
-const { decorateGetPostsOrCommentDetailed } = require('../helpers/decorator');
+const { decoratePostsDetailed } = require('../helpers/decorator');
 const { getLastPage } = require('../helpers/common');
 
 // /////// public methods //////////////
@@ -59,7 +59,7 @@ async function getPosts(req, res) {
 
     const lastPage = getLastPage(postsAmount, amountPerPage);
 
-    const postsDecorated = decorateGetPostsOrCommentDetailed(postsFromServer);
+    const postsDecorated = decoratePostsDetailed(postsFromServer);
     const posts = {};
     pagesRangeParsed.forEach((page, i) => {
       const postsFromPage = postsDecorated.slice(i * amountPerPage, amountPerPage * (i + 1));
@@ -116,7 +116,7 @@ async function getPostsFromUser(req, res) {
 
     const lastPage = getLastPage(postsAmount, amountPerPage);
 
-    const postsDecorated = decorateGetPostsOrCommentDetailed(postsFromServer);
+    const postsDecorated = decoratePostsDetailed(postsFromServer);
     const posts = {};
     pagesRangeParsed.forEach((page, i) => {
       const postsFromPage = postsDecorated.slice(i * amountPerPage, amountPerPage * (i + 1));

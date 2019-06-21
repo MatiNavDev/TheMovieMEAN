@@ -10,6 +10,10 @@ export class ForumItemComponent {
   @Output() onItemDetail = new EventEmitter();
   @Output() onEditOrDeleteItem = new EventEmitter();
 
+  ngonChanges() {
+    console.log(this.params);
+  }
+
   public onGoToProfile(authorId) {
     console.log(authorId);
   }

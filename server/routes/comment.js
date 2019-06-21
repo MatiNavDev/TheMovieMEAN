@@ -9,6 +9,12 @@ router.get('/user/*?', AuthMiddleware.authMiddleware, CommentController.getComme
 
 router.get('/:postId', AuthMiddleware.authMiddleware, CommentController.getCommentsFromPost);
 
+router.get(
+  '/:commentId/detailed',
+  AuthMiddleware.authMiddleware,
+  CommentController.getDetailedComment
+);
+
 router.patch('/:commentId', AuthMiddleware.authMiddleware, CommentController.patchComment);
 
 router.post('/:postId', AuthMiddleware.authMiddleware, CommentController.postNewComment);

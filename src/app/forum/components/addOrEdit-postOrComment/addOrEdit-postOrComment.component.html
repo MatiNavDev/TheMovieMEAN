@@ -1,8 +1,9 @@
 <div class="vertical-container">
+  <h2 *ngIf="postRelatedToComment">{{ postRelatedToComment }}</h2>
   <form
     class="vertical-center"
     [formGroup]="addOrEditPostOrCommentForm"
-    (submit)="onAddPostOrComment()"
+    (submit)="onSavePostOrComment()"
   >
     <div class="form-group" *ngIf="this.addOrEditPostOrCommentForm.controls.title">
       <label for="title">Título:</label>

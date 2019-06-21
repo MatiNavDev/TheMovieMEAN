@@ -4,7 +4,7 @@ const moment = require('moment');
  * Retorna los posts para que sean manejados por el frontend
  * @param {any[]} postsFromServer
  */
-function decorateGetPostsOrCommentDetailed(postsFromServer) {
+function decoratePostsDetailed(postsFromServer) {
   const posts = postsFromServer.map(post => ({
     id: post.id,
     title: post.title,
@@ -21,12 +21,16 @@ function decorateGetPostsOrCommentDetailed(postsFromServer) {
   return posts;
 }
 
-/**
- * Retorna los comments para que sean manejados por el frontend
- * @param {any[]} commentsFromServer
- */
-function decorateGetComments(commentsFromServer) {
-  const comments = commentsFromServer.map(comment => ({
+const decorateGetCommentsFromUser = commentsFromUser =>
+  commentsFromUser.map(comment => ({
+    id: comment.id,
+    message: comment.message,
+    post: comment.post._id.toHexString(),
+    updatedAt: moment(comment.updatedAt).format('DD/MM/YYYY, h:mm a')
+  }));
+
+const decorateGetCommentsFromPost = commentsFromPost =>
+  commentsFromPost.map(comment => ({
     id: comment.id,
     message: comment.message,
     autor: {
@@ -35,10 +39,24 @@ function decorateGetComments(commentsFromServer) {
     },
     updatedAt: moment(comment.updatedAt).format('DD/MM/YYYY, h:mm a')
   }));
-  return comments;
+
+/**
+ * Retorna los comments para que sean manejados por el frontend
+ * @param {any[]} commentsFromServer
+ * @param {'user' | 'post'} from
+ */
+function decorateGetComments(commentsFromServer, from) {
+  switch (from) {
+    case 'user':
+      return decorateGetCommentsFromUser(commentsFromServer);
+    case 'post':
+      return decorateGetCommentsFromPost(commentsFromServer);
+    default:
+      throw new Error('Tipo tiene que ser "post" o "usuario"');
+  }
 }
 
 module.exports = {
   decorateGetComments,
-  decorateGetPostsOrCommentDetailed
+  decoratePostsDetailed
 };

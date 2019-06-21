@@ -12,15 +12,11 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: ':id/new-comment',
+    path: ':postId/new-comment',
     component: AddOrEditPostOrCommentComponent
   },
   {
-    path: ':id/edit-comment',
-    component: AddOrEditPostOrCommentComponent
-  },
-  {
-    path: ':id/edit-post',
+    path: ':postId/edit-comment/:commentId',
     component: AddOrEditPostOrCommentComponent
   },
   {
