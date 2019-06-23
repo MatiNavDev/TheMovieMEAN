@@ -1,4 +1,3 @@
-import { environment } from './../../../environments/environment';
 import { ImageService } from '../../common/services/image.service';
 import { ErrorHandlerService } from '../../common/services/error-handler.service';
 import { environment } from '../../../environments/environment';
