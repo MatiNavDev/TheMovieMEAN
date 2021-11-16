@@ -31,7 +31,7 @@
     "@angular/service-worker": "^6.1.0",
     "@auth0/angular-jwt": "^2.0.0",
     "angular2-toaster": "^6.1.0",
-    "aws-sdk": "^2.337.0",
+    "aws-sdk": "^2.814.0",
     "bcrypt": "^3.0.1",
     "core-js": "^2.5.4",
     "express": "^4.16.3",
